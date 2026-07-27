@@ -1378,6 +1378,8 @@ const JOURNAL_TYPES = {
   devis_supprime:       {color:"#F08080", label:"Devis"},
   bilan_enregistre:     {color:"#C0392B", label:"Bilan"},
   bilan_supprime:       {color:"#F08080", label:"Bilan"},
+  bilan_traite:         {color:"#52D98B", label:"Bilan"},
+  patient_supprime:     {color:"#F08080", label:"Bilan"},
   absence_nouvelle:     {color:"#F0A840", label:"Absence"},
   absence_statut:       {color:"#F0A840", label:"Absence"},
   absence_suppr:        {color:"#F08080", label:"Absence"},
@@ -1986,7 +1988,7 @@ function buildDocInner(data, ref, overrideAuteur, overrideRole) {
       <div class="company">DOG<br>COMPAGNIE</div>
       <div style="font-size:8px;margin:2px 0;">${stampOrgLine}</div>
       <div class="initials">${escHtml(initials)}</div>
-      <div style="font-size:8px;">${isDG ? escHtml(auteurRole.toUpperCase()) : escHtml(auteurRole.toUpperCase())+"<br>DÉPANNAGE"}</div>
+      <div style="font-size:8px;">${isDG ? escHtml(auteurRole.toUpperCase()) : escHtml(auteurRole.toUpperCase())+"<br>AMBULANCIER"}</div>
     </div>
   </div>
   <div class="doc-refline">${escHtml(ref)}<br>Dog Compagnie — Document officiel</div>
@@ -2528,12 +2530,33 @@ async function upsertPatientFromBilan(data) {
   } catch(e) { console.warn("upsertPatientFromBilan error:", e.message); return null; }
 }
 
+function validateBilan(data) {
+  const requiredText = {
+    nom:"Nom", prenom:"Prénom", date_naissance:"Date de naissance", poids:"Poids", taille:"Taille",
+    groupe_sanguin:"Groupe sanguin", allergie:"Allergie (indiquez « Aucune » si besoin)",
+    nature_intervention:"Nature de l'intervention", nombre_victimes:"Nombre de victimes",
+    moyen_affecte:"Moyen affecté", orientation:"Orientation espace/temps",
+    douleurs:"Douleurs (indiquez « Aucune » si besoin)", symptomes:"Symptômes (indiquez « Aucun » si besoin)",
+    antecedents:"Antécédents médicaux (indiquez « Aucun » si besoin)", traitement_en_cours:"Traitement en cours (indiquez « Aucun » si besoin)",
+    maladie_chronique:"Maladie chronique (indiquez « Aucune » si besoin)", notes:"Notes / Résumé",
+  };
+  for(const [key,label] of Object.entries(requiredText)) {
+    if(!data[key]) return `Merci de renseigner : ${label}.`;
+  }
+  if(["diabete","asthme","alcool","drogue","tabac"].some(f=>ynState[f]===undefined)) {
+    return "Merci de répondre Oui/Non à Diabète, Asthme, Alcool, Drogue et Tabac.";
+  }
+  return null;
+}
+
 async function sauvegarderBilan() {
   const data = collectBilanData();
-  if(!data.nom || !data.prenom) { toast("Merci d'indiquer le nom et le prénom de la victime.","#E74C3C"); return; }
+  const err = validateBilan(data);
+  if(err) { toast(err,"#E74C3C"); return; }
   try {
     const patientId = await upsertPatientFromBilan(data);
     const payload = {...data, patient_id: patientId, auteur: identityLabel()};
+    if(!currentBilanId) payload.statut = "Attente de traitement";
     let r;
     if(currentBilanId) {
       r = await fetch(SB_URL+"/rest/v1/bilans?id=eq."+currentBilanId, {method:"PATCH", headers:{...H,"Prefer":"return=minimal"}, mode:"cors", body:JSON.stringify(payload)});
@@ -2640,15 +2663,32 @@ async function loadBilanHistory() {
     const rows = await sb("bilans?select=*&order=created_at.desc&limit=50");
     if(!el) return;
     if(!rows.length) { el.innerHTML = '<div class="empty"><p>Aucun bilan pour le moment.</p></div>'; return; }
-    el.innerHTML = rows.map(r=>`
+    el.innerHTML = rows.map(r=>{
+      const statut = r.statut || "Attente de traitement";
+      const isTraite = statut==="Traité";
+      return `
       <div class="log-item">
-        <div><div class="log-agent">${esc(r.reference)} — ${esc(r.prenom)} ${esc(r.nom)}</div><div class="log-dates">${r.date_bilan?new Date(r.date_bilan+"T12:00:00").toLocaleDateString("fr-FR"):""} · par ${esc(r.auteur||"—")}</div></div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;">
-          <button class="btn btn-primary btn-sm" onclick="reprintBilan('${r.id}')">👁 Revoir</button>
-          <button class="btn btn-danger btn-sm" onclick="supprimerBilan('${r.id}')">🗑</button>
+        <div>
+          <div class="log-agent">${esc(r.reference)} — ${esc(r.prenom)} ${esc(r.nom)}</div>
+          <div class="log-dates">${r.date_bilan?new Date(r.date_bilan+"T12:00:00").toLocaleDateString("fr-FR"):""} · par ${esc(r.auteur||"—")}</div>
+          <span class="absence-statut" style="background:${isTraite?"#52D98B22":"#F0A84022"};color:${isTraite?"#52D98B":"#F0A840"};border:1px solid ${isTraite?"#52D98B55":"#F0A84055"};margin-top:5px;display:inline-block;">${esc(statut)}</span>
         </div>
-      </div>`).join("");
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          ${!isTraite?`<button class="btn btn-success btn-sm" onclick="marquerBilanTraite('${r.id}')">✓ Marquer traité</button>`:""}
+          <button class="btn btn-primary btn-sm" onclick="reprintBilan('${r.id}')">👁 Revoir</button>
+          ${role==="admin"?`<button class="btn btn-danger btn-sm" onclick="supprimerBilan('${r.id}')">🗑</button>`:""}
+        </div>
+      </div>`;
+    }).join("");
   } catch(e) { if(el) el.innerHTML = '<div class="empty"><p>Erreur de chargement.</p></div>'; }
+}
+async function marquerBilanTraite(id) {
+  try {
+    await sb(`bilans?id=eq.${id}`,{method:"PATCH", body:JSON.stringify({statut:"Traité"})});
+    logActivity("bilan_traite", "Un bilan a été marqué comme traité");
+    toast("✓ Bilan marqué comme traité");
+    loadBilanHistory();
+  } catch(e) { toast("Erreur : "+e.message,"#E74C3C"); }
 }
 async function reprintBilan(id) {
   try {
@@ -2660,6 +2700,7 @@ async function reprintBilan(id) {
   } catch(e) { toast("Erreur : "+e.message,"#E74C3C"); }
 }
 async function supprimerBilan(id) {
+  if(role!=="admin") { toast("Seul l'Admin peut supprimer un bilan.","#E74C3C"); return; }
   if(!confirm("Supprimer définitivement ce bilan ?")) return;
   try {
     await sb(`bilans?id=eq.${id}`,{method:"DELETE"});
@@ -2712,11 +2753,25 @@ async function openPatientDetail(id) {
           Maladie chronique : ${esc(p.maladie_chronique)||"Aucune connue"}
         </div>
         <button class="btn btn-ghost btn-sm" style="margin-top:10px;" onclick="editPatientInfo('${p.id}')">✏️ Modifier les informations</button>
+        ${role==="admin"?`<button class="btn btn-danger btn-sm" style="margin-top:10px;margin-left:6px;" onclick="supprimerPatient('${p.id}')">🗑 Supprimer le dossier</button>`:""}
       </div>
       <div style="font-size:12px;font-weight:800;color:var(--text2);text-transform:uppercase;margin-bottom:8px;">📋 Historique des prises en charge (${(brows||[]).length})</div>
       ${bilansHtml}
     `;
   } catch(e) { el.innerHTML = '<div class="empty"><p>Erreur de chargement.</p></div>'; }
+}
+async function supprimerPatient(id) {
+  if(role!=="admin") { toast("Seul l'Admin peut supprimer un dossier patient.","#E74C3C"); return; }
+  if(!confirm("Supprimer définitivement ce dossier patient ? Les bilans déjà enregistrés resteront mais perdront leur lien vers ce dossier.")) return;
+  try {
+    await sb(`patients?id=eq.${id}`,{method:"DELETE"});
+    logActivity("patient_supprime","Dossier patient supprimé");
+    toast("✓ Dossier patient supprimé");
+    selectedPatientId = null;
+    const detailEl = document.getElementById("patient-detail");
+    if(detailEl) detailEl.innerHTML = '<div class="empty"><p>Sélectionnez un patient dans la liste.</p></div>';
+    loadPatientsList();
+  } catch(e) { toast("Erreur : "+e.message,"#E74C3C"); }
 }
 
 async function editPatientInfo(id) {
