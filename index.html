@@ -2569,6 +2569,7 @@ async function sauvegarderBilan() {
       currentBilanId = created && created[0] && created[0].id;
     }
     logActivity("bilan_enregistre", `Bilan ${data.reference} enregistré pour ${data.prenom} ${data.nom}`);
+    sendDiscordWebhook("🩺 Nouveau bilan enregistré", `**${data.reference}**\nVictime : ${data.prenom} ${data.nom}\nNature de l'intervention : ${data.nature_intervention||"—"}\nPar : ${identityLabel()}`, 0xC0392B);
     toast("✓ Bilan enregistré : "+data.reference);
     loadBilanHistory();
   } catch(e) { toast("Erreur : "+e.message,"#E74C3C"); }
@@ -2674,7 +2675,7 @@ async function loadBilanHistory() {
           <span class="absence-statut" style="background:${isTraite?"#52D98B22":"#F0A84022"};color:${isTraite?"#52D98B":"#F0A840"};border:1px solid ${isTraite?"#52D98B55":"#F0A84055"};margin-top:5px;display:inline-block;">${esc(statut)}</span>
         </div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;">
-          ${!isTraite?`<button class="btn btn-success btn-sm" onclick="marquerBilanTraite('${r.id}')">✓ Marquer traité</button>`:""}
+          ${(!isTraite && (role==="responsable"||role==="pdg"||role==="admin"))?`<button class="btn btn-success btn-sm" onclick="marquerBilanTraite('${r.id}')">✓ Marquer traité</button>`:""}
           <button class="btn btn-primary btn-sm" onclick="reprintBilan('${r.id}')">👁 Revoir</button>
           ${role==="admin"?`<button class="btn btn-danger btn-sm" onclick="supprimerBilan('${r.id}')">🗑</button>`:""}
         </div>
@@ -2683,6 +2684,7 @@ async function loadBilanHistory() {
   } catch(e) { if(el) el.innerHTML = '<div class="empty"><p>Erreur de chargement.</p></div>'; }
 }
 async function marquerBilanTraite(id) {
+  if(role!=="responsable" && role!=="pdg" && role!=="admin") { toast("Réservé au Responsable, PDG et Admin.","#E74C3C"); return; }
   try {
     await sb(`bilans?id=eq.${id}`,{method:"PATCH", body:JSON.stringify({statut:"Traité"})});
     logActivity("bilan_traite", "Un bilan a été marqué comme traité");
@@ -2739,7 +2741,10 @@ async function openPatientDetail(id) {
     const bilansHtml = (brows||[]).length ? brows.map(b=>`
       <div class="log-item">
         <div><div class="log-agent">${esc(b.reference)}</div><div class="log-dates">${b.date_bilan?new Date(b.date_bilan+"T12:00:00").toLocaleDateString("fr-FR"):""} — ${esc(b.nature_intervention)||"—"}</div></div>
-        <button class="btn btn-primary btn-sm" onclick="reprintBilan('${b.id}')">👁 Revoir</button>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="btn btn-primary btn-sm" onclick="reprintBilan('${b.id}')">👁 Revoir</button>
+          ${role==="admin"?`<button class="btn btn-danger btn-sm" onclick="supprimerBilanDepuisDossier('${b.id}','${id}')">🗑</button>`:""}
+        </div>
       </div>`).join("") : '<div class="empty"><p>Aucune prise en charge enregistrée.</p></div>';
     el.innerHTML = `
       <div style="margin-bottom:16px;">
@@ -2759,6 +2764,16 @@ async function openPatientDetail(id) {
       ${bilansHtml}
     `;
   } catch(e) { el.innerHTML = '<div class="empty"><p>Erreur de chargement.</p></div>'; }
+}
+async function supprimerBilanDepuisDossier(bilanId, patientId) {
+  if(role!=="admin") { toast("Seul l'Admin peut supprimer un bilan.","#E74C3C"); return; }
+  if(!confirm("Supprimer définitivement ce bilan ?")) return;
+  try {
+    await sb(`bilans?id=eq.${bilanId}`,{method:"DELETE"});
+    logActivity("bilan_supprime","Bilan supprimé depuis le dossier patient");
+    toast("✓ Bilan supprimé");
+    openPatientDetail(patientId);
+  } catch(e) { toast("Erreur : "+e.message,"#E74C3C"); }
 }
 async function supprimerPatient(id) {
   if(role!=="admin") { toast("Seul l'Admin peut supprimer un dossier patient.","#E74C3C"); return; }
