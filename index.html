@@ -429,7 +429,7 @@ tbody tr:hover{background:rgba(41,128,185,0.03);}
           <span class="role-name">PDG</span>
         </button>
         <button class="role-btn" onclick="selectRole('admin')" id="role-admin" style="grid-column:1 / -1;flex-direction:row;justify-content:center;gap:10px;padding:12px;border-style:dashed;opacity:0.85;">
-          <span class="role-icon" style="font-size:18px;">🚑</span>
+          <span class="role-icon" style="font-size:18px;">🔧</span>
           <span class="role-name">Admin</span>
         </button>
       </div>
@@ -506,7 +506,7 @@ tbody tr:hover{background:rgba(41,128,185,0.03);}
       <div class="legend-item"><div class="legend-dot" style="background:#52D98B"></div>Disponible</div>
       <div class="legend-item"><div class="legend-dot" style="background:#F08080"></div>Indisponible</div>
       <div class="legend-item"><div class="legend-dot" style="background:#FF6B4A"></div>Intervention</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#F0A840"></div>Convoi</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#F0A840"></div>Transfert CH</div>
       <div class="legend-item"><div class="legend-dot" style="background:#5DADE2"></div>Formation</div>
       <div class="legend-item"><div class="legend-dot" style="background:#4A5A6A"></div>Hors service</div>
     </div>
@@ -803,7 +803,7 @@ tbody tr:hover{background:rgba(41,128,185,0.03);}
 
   <div class="page" id="page-hierarchie">
     <div class="page-title">Hiérarchie <span>du service</span></div>
-    <div class="page-sub">Organisation actuelle de l'équipe de dépannage.</div>
+    <div class="page-sub">Organisation actuelle de l'équipe de secours.</div>
     <div class="card" style="max-width:940px;">
       <div class="card-hdr">
         <div class="card-hdr-title">🪖 Organigramme</div>
@@ -935,7 +935,7 @@ tbody tr:hover{background:rgba(41,128,185,0.03);}
       <button class="btn btn-sm btn-primary" id="doc-tab-convocation" onclick="setDocTab('convocation')">📋 Convocation</button>
       <button class="btn btn-sm btn-ghost" id="doc-tab-avertissement" onclick="setDocTab('avertissement')">⚠️ Avertissement</button>
       <button class="btn btn-sm btn-ghost" id="doc-tab-licenciement" onclick="setDocTab('licenciement')">🚫 Licenciement</button>
-      <button class="btn btn-sm btn-ghost" id="doc-tab-courrier" onclick="setDocTab('courrier')">✉️ Courrier Dépannage</button>
+      <button class="btn btn-sm btn-ghost" id="doc-tab-courrier" onclick="setDocTab('courrier')">✉️ Courrier Ambulancier</button>
       <button class="btn btn-sm btn-ghost" id="doc-tab-courrier_dg" onclick="setDocTab('courrier_dg')" style="display:none;">🏛️ Courrier Direction Générale</button>
     </div>
 
@@ -1014,7 +1014,7 @@ tbody tr:hover{background:rgba(41,128,185,0.03);}
     </div>
 
     <div class="card doc-subform" id="doc-form-courrier" style="max-width:760px;display:none;">
-      <div class="card-hdr"><div class="card-hdr-title">✉️ Nouveau — Courrier Dépannage</div></div>
+      <div class="card-hdr"><div class="card-hdr-title">✉️ Nouveau — Courrier Ambulancier</div></div>
       <div class="card-body">
         <div class="field-row-2">
           <div class="field"><label>Référence (auto)</label><input id="cou-ref" disabled></div>
@@ -1162,7 +1162,7 @@ tbody tr:hover{background:rgba(41,128,185,0.03);}
     <div class="field-row-2">
       <div class="field"><label>Disponible dès</label><input id="ent-dispo" placeholder="Ex : immédiatement, semaine prochaine…"></div>
       <div class="field">
-        <label>Expérience dépannage</label>
+        <label>Expérience secours</label>
         <select id="ent-experience">
           <option value="">— Sélectionner —</option>
           <option value="Aucune">Aucune</option>
@@ -1231,8 +1231,8 @@ const ROLE_TEXT   = {agent:"#5DADE2", responsable:"#C8A0E8", pdg:"#52D98B", cand
 const PATROL_ORDER = ["centrale","01","02","03","04","cmd"];
 const PATROL_LABELS = {centrale:"Dog Régulation","01":"Dog 01","02":"Dog 02","03":"Dog 03","04":"Dog 04",cmd:"Dog Commandement"};
 const FIELD_LABELS = {conducteur:"Conducteur",e1:"Équipier 1",e2:"Équipier 2",e3:"Équipier 3",vehicule:"Véhicule",statut:"Statut",notes:"Notes"};
-const STATUSES = ["Disponible","Indisponible","Intervention","Convoi","Formation","Hors service"];
-const STATUS_CLS = {Disponible:"s-dispo",Indisponible:"s-indispo",Intervention:"s-inter",Convoi:"s-convoi",Formation:"s-formation","Hors service":"s-hors"};
+const STATUSES = ["Disponible","Indisponible","Intervention","Transfert CH","Formation","Hors service"];
+const STATUS_CLS = {Disponible:"s-dispo",Indisponible:"s-indispo",Intervention:"s-inter","Transfert CH":"s-convoi",Formation:"s-formation","Hors service":"s-hors"};
 
 // ─── JOURNAL D'ACTIVITÉ (Admin) ──────────────────────────────────────
 const JOURNAL_TYPES = {
@@ -1249,6 +1249,7 @@ const JOURNAL_TYPES = {
   patrouille_maj:       {color:"#52D98B", label:"Intervention"},
   compte_cree:          {color:"#5DADE2", label:"Compte"},
   compte_supprime:      {color:"#F08080", label:"Compte"},
+  compte_pin_modifie:   {color:"#F0A840", label:"Compte"},
   hierarchie_role:      {color:"#9B59B6", label:"Compte"},
   hierarchie_general:   {color:"#F0A840", label:"Compte"},
   hierarchie_adjoint:   {color:"#48C9B0", label:"Compte"},
@@ -1392,7 +1393,7 @@ const EVAL_CRITERES = [
   {cat:"Techniques d'intervention", nom:"Prise de poste conforme au protocole", max:5, elim:false},
   {cat:"Techniques d'intervention", nom:"Sécurisation correcte de la zone d'intervention", max:5, elim:true},
   {cat:"Techniques d'intervention", nom:"Maîtrise du matériel médical d'urgence (brancard, oxygène, défibrillateur)", max:4, elim:false},
-  {cat:"Techniques d'intervention", nom:"Gestion proportionnée d'un conflit ou d'une situation tendue sur le terrain", max:6, elim:true},
+  {cat:"Techniques d'intervention", nom:"Application correcte des gestes de premiers secours", max:6, elim:true},
   {cat:"Techniques d'intervention", nom:"Connaissance et respect des zones de compétence", max:3, elim:false},
   {cat:"Techniques d'intervention", nom:"Conduite de l'ambulance — hors urgence", max:4, elim:false},
   {cat:"Techniques d'intervention", nom:"Conduite de l'ambulance — feux et sirène (urgence)", max:5, elim:true},
@@ -1604,7 +1605,7 @@ function closeEvalDetail() {
 
 // ─── DOCUMENTS OFFICIELS (Convocation/Avertissement, Licenciement, Courrier, Rapport d'incident) ──
 const DOC_PREFIX = {convocation:"CON", avertissement:"AVT", licenciement:"LIC", courrier:"COU", courrier_dg:"CDG", incident:"INC"};
-const DOC_LABEL  = {convocation:"Convocation", avertissement:"Avertissement", licenciement:"Licenciement", courrier:"Courrier Dépannage", courrier_dg:"Courrier — Direction Générale", incident:"Rapport d'incident"};
+const DOC_LABEL  = {convocation:"Convocation", avertissement:"Avertissement", licenciement:"Licenciement", courrier:"Courrier Ambulancier", courrier_dg:"Courrier — Direction Générale", incident:"Rapport d'incident"};
 const DOC_COLOR  = {convocation:"#8B5A2B", avertissement:"#8B5A2B", licenciement:"#7B1F1F", courrier:"#1F4E7B", courrier_dg:"#7D3C98", incident:"#7B1F1F"};
 
 function prefillDocDates() {
@@ -1794,7 +1795,7 @@ function buildDocInner(data, ref, overrideAuteur, overrideRole) {
   const isDG = type==="courrier_dg";
   const brandSubtitle = isDG ? "DIRECTION GÉNÉRALE" : "SERVICE AMBULANCIER";
   const brandColor = isDG ? "#7D3C98" : "#2980B9";
-  const orgLine = isDG ? "Dog Compagnie" : "Dépannage";
+  const orgLine = isDG ? "Dog Compagnie" : "Ambulancier";
   const stampOrgLine = isDG ? "Direction Générale" : "Service Ambulancier";
   const headerHTML = isDG
     ? `<div class="doc-hdr" style="justify-content:flex-start;gap:16px;">
@@ -3141,7 +3142,7 @@ function fmtUpd(ts){ if(!ts) return "—"; const d=new Date(ts); return d.toLoca
 
 function renderPatrols() {
   // Stats
-  const active  = patrols.filter(p=>["Disponible","Intervention","Convoi","Formation"].includes(p.statut)).length;
+  const active  = patrols.filter(p=>["Disponible","Intervention","Transfert CH","Formation"].includes(p.statut)).length;
   const inter   = patrols.filter(p=>p.statut==="Intervention").length;
   document.getElementById("patrol-stats").innerHTML = `
     <div class="stat-pill"><div class="stat-num" style="color:var(--blue-light)">${active}</div><div class="stat-lbl">Actives</div></div>
@@ -3151,12 +3152,12 @@ function renderPatrols() {
 
   // Table
   const PATROL_DEFS = [
-    {id:"centrale",label:"Dog Régulation", freq:"157 / 113.1",color:"#9B59B6"},
-    {id:"01",      label:"Dog 01",         freq:"157 / 157.1",color:"#2980B9"},
-    {id:"02",      label:"Dog 02",         freq:"157 / 157.2",color:"#2980B9"},
-    {id:"03",      label:"Dog 03",         freq:"157 / 157.3",color:"#2980B9"},
-    {id:"04",      label:"Dog 04",         freq:"157 / 157.4",color:"#2980B9"},
-    {id:"cmd",     label:"Dog Commandement", freq:"157 / 113.1 / 157.9",color:"#E74C3C"},
+    {id:"centrale",label:"Dog Régulation", freq:"158 / 117.1",color:"#9B59B6"},
+    {id:"01",      label:"Dog 01",         freq:"158 / 158.1",color:"#2980B9"},
+    {id:"02",      label:"Dog 02",         freq:"158 / 158.2",color:"#2980B9"},
+    {id:"03",      label:"Dog 03",         freq:"158 / 158.3",color:"#2980B9"},
+    {id:"04",      label:"Dog 04",         freq:"158 / 158.4",color:"#2980B9"},
+    {id:"cmd",     label:"Dog Commandement", freq:"158 / 117.1 / 158.9",color:"#E74C3C"},
   ];
 
   let html = `<table><thead><tr>
@@ -3291,7 +3292,7 @@ function updateStatus(patrol_id, sel) {
 }
 
 function updatePatrolStats() {
-  const active  = patrols.filter(p=>["Disponible","Intervention","Convoi","Formation"].includes(p.statut)).length;
+  const active  = patrols.filter(p=>["Disponible","Intervention","Transfert CH","Formation"].includes(p.statut)).length;
   const inter   = patrols.filter(p=>p.statut==="Intervention").length;
   const dispo   = patrols.filter(p=>p.statut==="Disponible").length;
   const statsEl = document.getElementById("patrol-stats");
@@ -4485,15 +4486,36 @@ function renderComptes() {
   if(cnt) cnt.textContent = allComptes.length+" compte(s)";
   if(!allComptes.length){ el.innerHTML='<div class="empty"><p>Aucun compte créé.</p></div>'; return; }
   const roleLabels = {agent:"Ambulancier", responsable:"Responsable", pdg:"PDG"};
+  const isAdmin = role==="admin";
   el.innerHTML = allComptes.map(c=>`
     <div class="admin-compte">
       <div class="admin-compte-info">
         <div class="ac-nom">${esc(c.prenom)} ${esc(c.nom)}</div>
         <div class="ac-role">${roleLabels[c.role]||c.role}</div>
-        <div class="ac-pin">PIN : ${"•".repeat((c.pin||"").length)}</div>
+        ${isAdmin ? `
+          <div class="ac-pin" style="display:flex;align-items:center;gap:6px;">
+            PIN : <input type="text" value="${esc(c.pin||"")}" id="pin-edit-${c.id}" style="width:80px;background:rgba(13,21,32,0.7);border:1px solid rgba(41,128,185,0.25);border-radius:6px;color:#fff;font-size:12px;padding:3px 6px;">
+            <button class="btn btn-ghost btn-sm" onclick="modifierPin('${c.id}')" style="padding:2px 8px;">💾</button>
+          </div>`
+        : `<div class="ac-pin">PIN : ${"•".repeat((c.pin||"").length)}</div>`}
       </div>
       <button class="btn btn-danger btn-sm" onclick="supprimerCompte('${c.id}')">🗑</button>
     </div>`).join("");
+}
+
+async function modifierPin(id) {
+  const inp = document.getElementById("pin-edit-"+id);
+  if(!inp) return;
+  const newPin = inp.value.trim();
+  if(!newPin || newPin.length<4) { toast("Le PIN doit faire au moins 4 chiffres.","#E74C3C"); return; }
+  if(allComptes.some(c=>String(c.id)!==String(id) && c.pin===newPin)) { toast("Ce PIN est déjà utilisé par un autre compte.","#E74C3C"); return; }
+  try {
+    await sb(`agents_comptes?id=eq.${id}`,{method:"PATCH",body:JSON.stringify({pin:newPin})});
+    const c = allComptes.find(x=>String(x.id)===String(id));
+    logActivity("compte_pin_modifie", `PIN modifié pour ${c?c.prenom+" "+c.nom:"un compte"} (par Admin)`);
+    toast("✓ PIN mis à jour");
+    await loadComptes();
+  } catch(e) { toast("Erreur : "+e.message,"#E74C3C"); }
 }
 
 async function creerCompte() {
