@@ -801,6 +801,139 @@ tbody tr:hover{background:rgba(41,128,185,0.03);}
     </div>
   </div>
 
+  <div class="page" id="page-bilans">
+    <div class="page-title">Fiche <span>bilan</span></div>
+    <div class="page-sub">Bilan de prise en charge d'une victime, à remplir lors d'une intervention.</div>
+    <div style="display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start;">
+      <div>
+        <div class="card">
+          <div class="card-hdr"><div class="card-hdr-title">🆔 Identité de la victime</div></div>
+          <div class="card-body">
+            <div class="field-row-2">
+              <div class="field"><label>Nom</label><input id="bil-nom" placeholder="NOM" onchange="this.value=formatNom(this.value); lookupPatient();"></div>
+              <div class="field"><label>Prénom</label><input id="bil-prenom" placeholder="Prénom" onchange="this.value=formatPrenom(this.value); lookupPatient();"></div>
+            </div>
+            <div class="field-row-3">
+              <div class="field"><label>Date de naissance</label><input id="bil-naissance" type="date"></div>
+              <div class="field"><label>Poids (kg)</label><input id="bil-poids" type="number" min="0" step="0.1"></div>
+              <div class="field"><label>Taille (cm)</label><input id="bil-taille" type="number" min="0" step="1"></div>
+            </div>
+            <div class="field-row-2">
+              <div class="field"><label>Groupe sanguin</label><input id="bil-groupe" placeholder="Ex : O+, A-, AB+…"></div>
+              <div class="field"><label>Allergie</label><input id="bil-allergie" placeholder="Ex : Pénicilline, arachides…"></div>
+            </div>
+            <div id="bil-patient-info"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-hdr"><div class="card-hdr-title">🚑 Intervention</div></div>
+          <div class="card-body">
+            <div class="field-row-3">
+              <div class="field"><label>Date du bilan</label><input id="bil-date" type="date"></div>
+              <div class="field"><label>Référence (auto)</label><input id="bil-ref" disabled></div>
+              <div class="field"><label>Nombre de victimes</label><input id="bil-nb-victimes" type="number" min="1" value="1"></div>
+            </div>
+            <div class="field"><label>Nature de l'intervention</label><input id="bil-nature" placeholder="Ex : AVP, malaise, chute…"></div>
+            <div class="field-row-2">
+              <div class="field"><label>Moyen affecté</label><input id="bil-moyen" placeholder="Ex : Dog 01"></div>
+              <div class="field"><label>Orientation espace/temps</label><input id="bil-orientation" placeholder="Ex : Bien orientée / Désorientée"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-hdr"><div class="card-hdr-title">🩺 Bilan clinique</div></div>
+          <div class="card-body">
+            <div class="field"><label>Douleurs</label><input id="bil-douleurs" placeholder="Localisation, intensité…"></div>
+            <div class="field"><label>Symptômes (nausées, vertiges, etc.)</label><input id="bil-symptomes" placeholder="Ex : nausées, vertiges…"></div>
+            <div class="field"><label>Constantes (facultatif)</label><input id="bil-constantes" placeholder="FC, TA, SpO2, FR…"></div>
+            <div class="field"><label>Antécédents médicaux</label><input id="bil-antecedents" placeholder="Ex : opérations, pathologies connues…"></div>
+            <div class="field"><label>Traitement en cours</label><input id="bil-traitement" placeholder="Ex : anticoagulants…"></div>
+            <div class="field"><label>Maladie chronique</label><input id="bil-maladie-chronique" placeholder="Ex : diabète type 2, asthme…"></div>
+            <div style="background:rgba(13,21,32,0.4);border-radius:9px;padding:12px 14px;margin-bottom:14px;">
+              <div class="yn-row" style="padding-top:0;">
+                <div class="yn-label">Diabète</div>
+                <div class="yn-btns">
+                  <button class="yn-btn yes" data-field="diabete" data-val="O" onclick="toggleYN(this)">Oui</button>
+                  <button class="yn-btn no"  data-field="diabete" data-val="N" onclick="toggleYN(this)">Non</button>
+                </div>
+              </div>
+              <div class="yn-row">
+                <div class="yn-label">Asthme</div>
+                <div class="yn-btns">
+                  <button class="yn-btn yes" data-field="asthme" data-val="O" onclick="toggleYN(this)">Oui</button>
+                  <button class="yn-btn no"  data-field="asthme" data-val="N" onclick="toggleYN(this)">Non</button>
+                </div>
+              </div>
+              <div class="yn-row">
+                <div class="yn-label">Alcool</div>
+                <div class="yn-btns">
+                  <button class="yn-btn yes" data-field="alcool" data-val="O" onclick="toggleYN(this)">Oui</button>
+                  <button class="yn-btn no"  data-field="alcool" data-val="N" onclick="toggleYN(this)">Non</button>
+                </div>
+              </div>
+              <div class="yn-row">
+                <div class="yn-label">Drogue</div>
+                <div class="yn-btns">
+                  <button class="yn-btn yes" data-field="drogue" data-val="O" onclick="toggleYN(this)">Oui</button>
+                  <button class="yn-btn no"  data-field="drogue" data-val="N" onclick="toggleYN(this)">Non</button>
+                </div>
+              </div>
+              <div class="yn-row">
+                <div class="yn-label">Tabac</div>
+                <div class="yn-btns">
+                  <button class="yn-btn yes" data-field="tabac" data-val="O" onclick="toggleYN(this)">Oui</button>
+                  <button class="yn-btn no"  data-field="tabac" data-val="N" onclick="toggleYN(this)">Non</button>
+                </div>
+              </div>
+            </div>
+            <div class="field"><label>Notes / Résumé</label><textarea id="bil-notes" rows="4" placeholder="Résumé de la prise en charge, gestes effectués, devenir de la victime…"></textarea></div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card">
+          <div class="card-hdr"><div class="card-hdr-title">📇 Dossier patient</div></div>
+          <div class="card-body" id="bil-dossier-info" style="font-size:12px;color:var(--text2);">Renseignez le nom et le prénom pour lier ce bilan au dossier patient.</div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><div class="card-hdr-title">⚡ Actions</div></div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:8px;">
+            <button class="btn btn-primary btn-full" onclick="apercuBilan()">👁 Aperçu &amp; Impression</button>
+            <button class="btn btn-ghost btn-full" onclick="sauvegarderBilan()">💾 Sauvegarder le bilan</button>
+            <button class="btn btn-danger btn-full" onclick="nouveauBilan()">🔄 Nouveau bilan</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><div class="card-hdr-title">📚 Bilans récents</div></div>
+          <div class="card-body" id="bil-history"><div class="empty"><p>Chargement…</p></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="page-dossiers-patients">
+    <div class="page-title">Dossiers <span>patients</span></div>
+    <div class="page-sub">Fiche d'identité et historique des prises en charge de chaque victime.</div>
+    <div class="card" style="max-width:420px;">
+      <div class="card-body">
+        <div class="field"><label>🔍 Rechercher un patient</label><input id="patients-search" placeholder="Nom ou prénom…" oninput="loadPatientsList()"></div>
+      </div>
+    </div>
+    <div id="patients-list-container" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
+      <div class="card">
+        <div class="card-hdr"><div class="card-hdr-title">📇 Patients enregistrés</div></div>
+        <div class="card-body" id="patients-list"><div class="empty"><p>Chargement…</p></div></div>
+      </div>
+      <div class="card">
+        <div class="card-hdr"><div class="card-hdr-title">📋 Détail du dossier</div></div>
+        <div class="card-body" id="patient-detail"><div class="empty"><p>Sélectionnez un patient dans la liste.</p></div></div>
+      </div>
+    </div>
+  </div>
+
   <div class="page" id="page-hierarchie">
     <div class="page-title">Hiérarchie <span>du service</span></div>
     <div class="page-sub">Organisation actuelle de l'équipe de secours.</div>
@@ -1243,6 +1376,8 @@ const JOURNAL_TYPES = {
   entretien_maj:        {color:"#C8A0E8", label:"Candidature"},
   devis_enregistre:     {color:"#2980B9", label:"Devis"},
   devis_supprime:       {color:"#F08080", label:"Devis"},
+  bilan_enregistre:     {color:"#C0392B", label:"Bilan"},
+  bilan_supprime:       {color:"#F08080", label:"Bilan"},
   absence_nouvelle:     {color:"#F0A840", label:"Absence"},
   absence_statut:       {color:"#F0A840", label:"Absence"},
   absence_suppr:        {color:"#F08080", label:"Absence"},
@@ -2264,6 +2399,343 @@ async function supprimerDevis(id) {
   } catch(e) { toast("Erreur : "+e.message,"#E74C3C"); }
 }
 
+// ─── DOSSIERS PATIENTS & FICHES BILAN ────────────────────────────────
+function formatPrenom(s) {
+  s = (s||"").trim().toLowerCase();
+  if(!s) return "";
+  return s.replace(/(^|[\s-])([a-zàâäéèêëïîôöùûüçñ])/g, (m,sep,c)=>sep+c.toUpperCase());
+}
+function formatNom(s) {
+  return (s||"").trim().toUpperCase();
+}
+
+let currentBilanId = null;
+let currentPatientLink = null;
+let selectedPatientId = null;
+
+async function lookupPatient() {
+  const nom = document.getElementById("bil-nom").value.trim();
+  const prenom = document.getElementById("bil-prenom").value.trim();
+  const infoEl = document.getElementById("bil-dossier-info");
+  if(!nom || !prenom) { currentPatientLink = null; if(infoEl) infoEl.innerHTML = "Renseignez le nom et le prénom pour lier ce bilan au dossier patient."; return; }
+  try {
+    const rows = await sb(`patients?nom=eq.${encodeURIComponent(nom)}&prenom=eq.${encodeURIComponent(prenom)}&select=*`);
+    const p = rows && rows[0];
+    if(p) {
+      currentPatientLink = p;
+      if(!document.getElementById("bil-naissance").value && p.date_naissance) document.getElementById("bil-naissance").value = p.date_naissance;
+      if(!document.getElementById("bil-poids").value && p.poids) document.getElementById("bil-poids").value = p.poids;
+      if(!document.getElementById("bil-taille").value && p.taille) document.getElementById("bil-taille").value = p.taille;
+      if(!document.getElementById("bil-groupe").value && p.groupe_sanguin) document.getElementById("bil-groupe").value = p.groupe_sanguin;
+      if(!document.getElementById("bil-allergie").value && p.allergie) document.getElementById("bil-allergie").value = p.allergie;
+      if(!document.getElementById("bil-maladie-chronique").value && p.maladie_chronique) document.getElementById("bil-maladie-chronique").value = p.maladie_chronique;
+      if(infoEl) infoEl.innerHTML = `<div style="font-size:12px;color:#52D98B;">✓ Dossier existant trouvé — informations complétées automatiquement.</div>`;
+    } else {
+      currentPatientLink = null;
+      if(infoEl) infoEl.innerHTML = `<div style="font-size:12px;color:var(--text2);">Aucun dossier existant — un nouveau dossier patient sera créé à l'enregistrement.</div>`;
+    }
+  } catch(e) { console.warn("lookupPatient error:", e.message); }
+}
+
+async function nextBilanRef() {
+  const year = new Date().getFullYear();
+  try {
+    const rows = await sb(`bilans?select=reference`);
+    const count = (rows||[]).filter(r=>r.reference && r.reference.includes("-"+year+"-")).length;
+    return `BIL-${year}-${String(count+1).padStart(3,"0")}`;
+  } catch(e) { return `BIL-${year}-001`; }
+}
+
+async function nouveauBilan(confirmFirst) {
+  if(confirmFirst===undefined) confirmFirst = true;
+  if(confirmFirst && !confirm("Repartir sur un bilan vierge ? Les modifications non sauvegardées seront perdues.")) return;
+  currentBilanId = null;
+  currentPatientLink = null;
+  ["bil-nom","bil-prenom","bil-naissance","bil-poids","bil-taille","bil-groupe","bil-allergie",
+   "bil-nature","bil-moyen","bil-orientation","bil-douleurs","bil-symptomes","bil-constantes",
+   "bil-antecedents","bil-traitement","bil-maladie-chronique","bil-notes"].forEach(id=>{
+    const el = document.getElementById(id); if(el) el.value="";
+  });
+  document.getElementById("bil-nb-victimes").value = 1;
+  document.getElementById("bil-date").value = todayISO();
+  document.getElementById("bil-ref").value = await nextBilanRef();
+  document.getElementById("bil-dossier-info").innerHTML = "Renseignez le nom et le prénom pour lier ce bilan au dossier patient.";
+  document.querySelectorAll("#page-bilans .yn-btn").forEach(b=>b.classList.remove("active"));
+  ["diabete","asthme","alcool","drogue","tabac"].forEach(f=>delete ynState[f]);
+}
+
+async function initBilanPage() {
+  await nouveauBilan(false);
+  loadBilanHistory();
+}
+
+function collectBilanData() {
+  return {
+    reference: document.getElementById("bil-ref").value,
+    date_bilan: document.getElementById("bil-date").value || todayISO(),
+    nom: formatNom(document.getElementById("bil-nom").value),
+    prenom: formatPrenom(document.getElementById("bil-prenom").value),
+    date_naissance: document.getElementById("bil-naissance").value || null,
+    poids: parseFloat(document.getElementById("bil-poids").value)||null,
+    taille: parseFloat(document.getElementById("bil-taille").value)||null,
+    groupe_sanguin: document.getElementById("bil-groupe").value.trim(),
+    allergie: document.getElementById("bil-allergie").value.trim(),
+    nature_intervention: document.getElementById("bil-nature").value.trim(),
+    nombre_victimes: document.getElementById("bil-nb-victimes").value.trim(),
+    moyen_affecte: document.getElementById("bil-moyen").value.trim(),
+    orientation: document.getElementById("bil-orientation").value.trim(),
+    douleurs: document.getElementById("bil-douleurs").value.trim(),
+    symptomes: document.getElementById("bil-symptomes").value.trim(),
+    constantes: document.getElementById("bil-constantes").value.trim(),
+    antecedents: document.getElementById("bil-antecedents").value.trim(),
+    traitement_en_cours: document.getElementById("bil-traitement").value.trim(),
+    maladie_chronique: document.getElementById("bil-maladie-chronique").value.trim(),
+    diabete: ynState.diabete==="O",
+    asthme: ynState.asthme==="O",
+    alcool: ynState.alcool==="O",
+    drogue: ynState.drogue==="O",
+    tabac: ynState.tabac==="O",
+    notes: document.getElementById("bil-notes").value.trim(),
+  };
+}
+
+async function upsertPatientFromBilan(data) {
+  if(!data.nom || !data.prenom) return null;
+  try {
+    const rows = await sb(`patients?nom=eq.${encodeURIComponent(data.nom)}&prenom=eq.${encodeURIComponent(data.prenom)}&select=*`);
+    const existing = rows && rows[0];
+    const payload = {
+      nom: data.nom, prenom: data.prenom,
+      date_naissance: data.date_naissance || (existing?existing.date_naissance:null),
+      poids: data.poids || (existing?existing.poids:null),
+      taille: data.taille || (existing?existing.taille:null),
+      groupe_sanguin: data.groupe_sanguin || (existing?existing.groupe_sanguin:null),
+      allergie: data.allergie || (existing?existing.allergie:null),
+      maladie_chronique: data.maladie_chronique || (existing?existing.maladie_chronique:null),
+      updated_at: new Date().toISOString(),
+    };
+    if(existing) {
+      await sb(`patients?id=eq.${existing.id}`, {method:"PATCH", body:JSON.stringify(payload)});
+      return existing.id;
+    } else {
+      const r = await fetch(SB_URL+"/rest/v1/patients", {
+        method:"POST", headers:{...H,"Prefer":"return=representation"}, mode:"cors", body:JSON.stringify(payload)
+      });
+      if(!r.ok) throw new Error(await r.text());
+      const created = await r.json();
+      return created && created[0] && created[0].id;
+    }
+  } catch(e) { console.warn("upsertPatientFromBilan error:", e.message); return null; }
+}
+
+async function sauvegarderBilan() {
+  const data = collectBilanData();
+  if(!data.nom || !data.prenom) { toast("Merci d'indiquer le nom et le prénom de la victime.","#E74C3C"); return; }
+  try {
+    const patientId = await upsertPatientFromBilan(data);
+    const payload = {...data, patient_id: patientId, auteur: identityLabel()};
+    let r;
+    if(currentBilanId) {
+      r = await fetch(SB_URL+"/rest/v1/bilans?id=eq."+currentBilanId, {method:"PATCH", headers:{...H,"Prefer":"return=minimal"}, mode:"cors", body:JSON.stringify(payload)});
+    } else {
+      r = await fetch(SB_URL+"/rest/v1/bilans", {method:"POST", headers:{...H,"Prefer":"return=representation"}, mode:"cors", body:JSON.stringify(payload)});
+    }
+    if(!r.ok) throw new Error(await r.text());
+    if(!currentBilanId) {
+      const created = await r.json();
+      currentBilanId = created && created[0] && created[0].id;
+    }
+    logActivity("bilan_enregistre", `Bilan ${data.reference} enregistré pour ${data.prenom} ${data.nom}`);
+    toast("✓ Bilan enregistré : "+data.reference);
+    loadBilanHistory();
+  } catch(e) { toast("Erreur : "+e.message,"#E74C3C"); }
+}
+
+function buildBilanInner(d) {
+  const escHtml = s => (s||"").toString().replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  const auteur = d.auteur || identityLabel();
+  const dateBilanFr = d.date_bilan ? new Date(d.date_bilan+"T12:00:00").toLocaleDateString("fr-FR") : "—";
+  const naissanceFr = d.date_naissance ? new Date(d.date_naissance+"T12:00:00").toLocaleDateString("fr-FR") : "—";
+  const oui = v => v ? "Oui" : "Non";
+  const css = `
+.bil-page{width:700px;background:#fff;padding:40px 40px 50px;font-family:'Segoe UI',Arial,sans-serif;color:#1a1a1a;}
+.bil-titlebar{background:#C0392B;color:#fff;font-weight:800;font-size:16px;letter-spacing:0.03em;padding:14px 18px;border-radius:2px;margin-bottom:20px;text-align:center;}
+.bil-section-title{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;color:#1a1a1a;background:#f5f7fa;padding:7px 10px;margin:16px 0 8px;border-left:3px solid #C0392B;}
+.bil-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 20px;font-size:11.5px;margin-bottom:6px;}
+.bil-grid .full{grid-column:1 / -1;}
+.bil-grid .lbl{color:#8a94a3;font-size:9.5px;text-transform:uppercase;}
+.bil-grid .val{font-weight:600;margin-top:1px;margin-bottom:4px;}
+.bil-footer{margin-top:30px;font-size:9px;color:#999;text-align:center;}
+`;
+  const html = `<div class="bil-page">
+    <div class="bil-titlebar">FICHE BILAN — DOG RESCUE</div>
+    <div class="bil-grid">
+      <div><div class="lbl">Référence</div><div class="val">${escHtml(d.reference)}</div></div>
+      <div><div class="lbl">Date du bilan</div><div class="val">${dateBilanFr}</div></div>
+    </div>
+    <div class="bil-section-title">Identité de la victime</div>
+    <div class="bil-grid">
+      <div><div class="lbl">Nom</div><div class="val">${escHtml(d.nom)}</div></div>
+      <div><div class="lbl">Prénom</div><div class="val">${escHtml(d.prenom)}</div></div>
+      <div><div class="lbl">Date de naissance</div><div class="val">${naissanceFr}</div></div>
+      <div><div class="lbl">Groupe sanguin</div><div class="val">${escHtml(d.groupe_sanguin)||"—"}</div></div>
+      <div><div class="lbl">Poids</div><div class="val">${d.poids?d.poids+" kg":"—"}</div></div>
+      <div><div class="lbl">Taille</div><div class="val">${d.taille?d.taille+" cm":"—"}</div></div>
+      <div class="full"><div class="lbl">Allergie</div><div class="val">${escHtml(d.allergie)||"Aucune connue"}</div></div>
+    </div>
+    <div class="bil-section-title">Intervention</div>
+    <div class="bil-grid">
+      <div class="full"><div class="lbl">Nature de l'intervention</div><div class="val">${escHtml(d.nature_intervention)||"—"}</div></div>
+      <div><div class="lbl">Nombre de victimes</div><div class="val">${escHtml(d.nombre_victimes)||"—"}</div></div>
+      <div><div class="lbl">Moyen affecté</div><div class="val">${escHtml(d.moyen_affecte)||"—"}</div></div>
+      <div class="full"><div class="lbl">Orientation espace/temps</div><div class="val">${escHtml(d.orientation)||"—"}</div></div>
+    </div>
+    <div class="bil-section-title">Bilan clinique</div>
+    <div class="bil-grid">
+      <div class="full"><div class="lbl">Douleurs</div><div class="val">${escHtml(d.douleurs)||"—"}</div></div>
+      <div class="full"><div class="lbl">Symptômes</div><div class="val">${escHtml(d.symptomes)||"—"}</div></div>
+      <div class="full"><div class="lbl">Constantes</div><div class="val">${escHtml(d.constantes)||"—"}</div></div>
+      <div class="full"><div class="lbl">Antécédents médicaux</div><div class="val">${escHtml(d.antecedents)||"—"}</div></div>
+      <div class="full"><div class="lbl">Traitement en cours</div><div class="val">${escHtml(d.traitement_en_cours)||"—"}</div></div>
+      <div class="full"><div class="lbl">Maladie chronique</div><div class="val">${escHtml(d.maladie_chronique)||"—"}</div></div>
+      <div><div class="lbl">Diabète</div><div class="val">${oui(d.diabete)}</div></div>
+      <div><div class="lbl">Asthme</div><div class="val">${oui(d.asthme)}</div></div>
+      <div><div class="lbl">Alcool</div><div class="val">${oui(d.alcool)}</div></div>
+      <div><div class="lbl">Drogue</div><div class="val">${oui(d.drogue)}</div></div>
+      <div><div class="lbl">Tabac</div><div class="val">${oui(d.tabac)}</div></div>
+    </div>
+    ${d.notes ? `<div class="bil-section-title">Notes / Résumé</div><div style="font-size:12px;line-height:1.6;">${escHtml(d.notes).replace(/\n/g,"<br>")}</div>` : ""}
+    <div class="bil-footer">${escHtml(d.reference)} — Dog Rescue — Bilan rédigé par ${escHtml(auteur)} le ${new Date().toLocaleDateString("fr-FR")}</div>
+  </div>`;
+  return {css, html};
+}
+
+async function renderBilanAsJPEG(data) {
+  if(typeof html2canvas==="undefined") throw new Error("Le module de génération d'image n'a pas pu se charger.");
+  const {css, html} = buildBilanInner(data);
+  const zone = document.getElementById("doc-render-zone");
+  zone.innerHTML = `<style>${css}</style>${html}`;
+  await new Promise(r=>setTimeout(r,60));
+  const target = zone.querySelector(".bil-page");
+  const canvas = await html2canvas(target, {scale:2, backgroundColor:"#ffffff", useCORS:true});
+  zone.innerHTML = "";
+  return await new Promise(resolve=>{
+    canvas.toBlob(blob=>resolve(URL.createObjectURL(blob)), "image/jpeg", 0.95);
+  });
+}
+
+async function apercuBilan() {
+  const data = collectBilanData();
+  if(!data.nom || !data.prenom) { toast("Merci d'indiquer le nom et le prénom de la victime.","#E74C3C"); return; }
+  toast("⏳ Génération de l'aperçu…","#5D8AA8");
+  try {
+    const url = await renderBilanAsJPEG({...data, auteur: identityLabel()});
+    showDocPreview(url, data.reference);
+  } catch(e) { toast("Erreur lors de la génération : "+e.message,"#E74C3C"); }
+}
+
+async function loadBilanHistory() {
+  const el = document.getElementById("bil-history");
+  try {
+    const rows = await sb("bilans?select=*&order=created_at.desc&limit=50");
+    if(!el) return;
+    if(!rows.length) { el.innerHTML = '<div class="empty"><p>Aucun bilan pour le moment.</p></div>'; return; }
+    el.innerHTML = rows.map(r=>`
+      <div class="log-item">
+        <div><div class="log-agent">${esc(r.reference)} — ${esc(r.prenom)} ${esc(r.nom)}</div><div class="log-dates">${r.date_bilan?new Date(r.date_bilan+"T12:00:00").toLocaleDateString("fr-FR"):""} · par ${esc(r.auteur||"—")}</div></div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="btn btn-primary btn-sm" onclick="reprintBilan('${r.id}')">👁 Revoir</button>
+          <button class="btn btn-danger btn-sm" onclick="supprimerBilan('${r.id}')">🗑</button>
+        </div>
+      </div>`).join("");
+  } catch(e) { if(el) el.innerHTML = '<div class="empty"><p>Erreur de chargement.</p></div>'; }
+}
+async function reprintBilan(id) {
+  try {
+    const rows = await sb(`bilans?id=eq.${id}&select=*`);
+    const d = rows && rows[0];
+    if(!d) return;
+    const url = await renderBilanAsJPEG(d);
+    showDocPreview(url, d.reference);
+  } catch(e) { toast("Erreur : "+e.message,"#E74C3C"); }
+}
+async function supprimerBilan(id) {
+  if(!confirm("Supprimer définitivement ce bilan ?")) return;
+  try {
+    await sb(`bilans?id=eq.${id}`,{method:"DELETE"});
+    logActivity("bilan_supprime","Bilan supprimé");
+    toast("✓ Bilan supprimé");
+    loadBilanHistory();
+  } catch(e) { toast("Erreur : "+e.message,"#E74C3C"); }
+}
+
+// ─── DOSSIERS PATIENTS ────────────────────────────────────────────
+async function loadPatientsList() {
+  const el = document.getElementById("patients-list");
+  const q = (document.getElementById("patients-search")?.value||"").trim().toLowerCase();
+  try {
+    const rows = await sb("patients?select=*&order=nom");
+    if(!el) return;
+    const filtered = q ? rows.filter(p=>((p.nom||"")+" "+(p.prenom||"")).toLowerCase().includes(q)) : rows;
+    if(!filtered.length) { el.innerHTML = '<div class="empty"><p>Aucun patient trouvé.</p></div>'; return; }
+    el.innerHTML = filtered.map(p=>`
+      <div class="log-item" style="cursor:pointer;" onclick="openPatientDetail('${p.id}')">
+        <div><div class="log-agent">${esc(p.prenom)} ${esc(p.nom)}</div><div class="log-dates">${p.date_naissance?new Date(p.date_naissance+"T12:00:00").toLocaleDateString("fr-FR"):"Date de naissance non renseignée"}</div></div>
+      </div>`).join("");
+  } catch(e) { if(el) el.innerHTML = '<div class="empty"><p>Erreur de chargement.</p></div>'; }
+}
+
+async function openPatientDetail(id) {
+  selectedPatientId = id;
+  const el = document.getElementById("patient-detail");
+  if(!el) return;
+  el.innerHTML = '<div class="empty"><p>Chargement…</p></div>';
+  try {
+    const prows = await sb(`patients?id=eq.${id}&select=*`);
+    const p = prows && prows[0];
+    if(!p) { el.innerHTML = '<div class="empty"><p>Patient introuvable.</p></div>'; return; }
+    const brows = await sb(`bilans?patient_id=eq.${id}&select=*&order=created_at.desc`);
+    const bilansHtml = (brows||[]).length ? brows.map(b=>`
+      <div class="log-item">
+        <div><div class="log-agent">${esc(b.reference)}</div><div class="log-dates">${b.date_bilan?new Date(b.date_bilan+"T12:00:00").toLocaleDateString("fr-FR"):""} — ${esc(b.nature_intervention)||"—"}</div></div>
+        <button class="btn btn-primary btn-sm" onclick="reprintBilan('${b.id}')">👁 Revoir</button>
+      </div>`).join("") : '<div class="empty"><p>Aucune prise en charge enregistrée.</p></div>';
+    el.innerHTML = `
+      <div style="margin-bottom:16px;">
+        <div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:8px;">${esc(p.prenom)} ${esc(p.nom)}</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.8;">
+          Date de naissance : ${p.date_naissance?new Date(p.date_naissance+"T12:00:00").toLocaleDateString("fr-FR"):"—"}<br>
+          Poids : ${p.poids?p.poids+" kg":"—"} · Taille : ${p.taille?p.taille+" cm":"—"} · Groupe sanguin : ${esc(p.groupe_sanguin)||"—"}<br>
+          Téléphone : ${esc(p.telephone)||"—"} · Email : ${esc(p.email)||"—"}<br>
+          Personne à prévenir : ${esc(p.personne_a_prevenir)||"—"}<br>
+          Allergie : ${esc(p.allergie)||"Aucune connue"}<br>
+          Maladie chronique : ${esc(p.maladie_chronique)||"Aucune connue"}
+        </div>
+        <button class="btn btn-ghost btn-sm" style="margin-top:10px;" onclick="editPatientInfo('${p.id}')">✏️ Modifier les informations</button>
+      </div>
+      <div style="font-size:12px;font-weight:800;color:var(--text2);text-transform:uppercase;margin-bottom:8px;">📋 Historique des prises en charge (${(brows||[]).length})</div>
+      ${bilansHtml}
+    `;
+  } catch(e) { el.innerHTML = '<div class="empty"><p>Erreur de chargement.</p></div>'; }
+}
+
+async function editPatientInfo(id) {
+  try {
+    const rows = await sb(`patients?id=eq.${id}&select=*`);
+    const p = rows && rows[0];
+    if(!p) return;
+    const telephone = prompt("Téléphone :", p.telephone||"");
+    if(telephone===null) return;
+    const email = prompt("Email :", p.email||"");
+    if(email===null) return;
+    const personne = prompt("Personne à prévenir en cas d'urgence :", p.personne_a_prevenir||"");
+    if(personne===null) return;
+    await sb(`patients?id=eq.${id}`, {method:"PATCH", body:JSON.stringify({telephone, email, personne_a_prevenir:personne, updated_at:new Date().toISOString()})});
+    toast("✓ Informations mises à jour");
+    openPatientDetail(id);
+  } catch(e) { toast("Erreur : "+e.message,"#E74C3C"); }
+}
+
 async function loadDocHistory(scope) {
   try {
     const rows = await sb("documents?select=*&order=created_at.desc&limit=100");
@@ -2438,7 +2910,7 @@ function renderJournal() {
   const statsEl = document.getElementById("journal-stats");
   const filterEl = document.getElementById("journal-filter-bar");
   if(!el) return;
-  const cats = ["Candidature","Absence","Intervention","Compte","Service","Alerte","Évaluation","Document","Devis"];
+  const cats = ["Candidature","Absence","Intervention","Compte","Service","Alerte","Évaluation","Document","Devis","Bilan"];
   if(statsEl) {
     statsEl.innerHTML = cats.map(cat=>{
       const n = allLogsJournal.filter(l=>journalMeta(l.type).label===cat).length;
@@ -2530,6 +3002,8 @@ const NAV_CONFIG = [
   {page:"mon-service",      icon:"🟢", label:"Mon service",           roles:["agent","responsable","pdg","admin"], section:"Opérations"},
   {page:"absence-form",     icon:"📅", label:"Déclarer une absence",  roles:["agent","responsable","pdg","admin"], section:"Opérations"},
   {page:"incident",         icon:"🚨", label:"Rapport d'incident",    roles:["agent","responsable","pdg","admin"],         section:"Opérations", badgeId:"nav-badge-inc"},
+  {page:"bilans",           icon:"🩺", label:"Fiche bilan",           roles:["agent","responsable","pdg","admin"],         section:"Opérations"},
+  {page:"dossiers-patients",icon:"🗃️", label:"Dossiers patients",     roles:["agent","responsable","pdg","admin"],         section:"Opérations"},
   {page:"absences-gestion", icon:"📋", label:"Gestion des absences",  roles:["responsable","pdg","admin"],         section:"Gestion", badgeId:"nav-badge-abs"},
   {page:"logs-service",     icon:"📊", label:"Logs de service",       roles:["responsable","pdg","admin"],         section:"Gestion"},
   {page:"candidatures",     icon:"📨", label:"Candidatures reçues",   roles:["responsable","pdg","admin"],         section:"Gestion", badgeId:"nav-badge-cand"},
@@ -2593,6 +3067,8 @@ function goPage(pageId) {
   }
   if(pageId==="devis")             initDevisPage();
   if(pageId==="incident")          { prefillDocDates(); loadDocHistory("incident"); }
+  if(pageId==="bilans")            initBilanPage();
+  if(pageId==="dossiers-patients") loadPatientsList();
   if(pageId==="mon-service")       initServicePage();
   if(pageId==="absence-form") {
     const nomEl = document.getElementById("abs-nom");
