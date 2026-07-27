@@ -2661,9 +2661,10 @@ async function apercuBilan() {
 async function loadBilanHistory() {
   const el = document.getElementById("bil-history");
   try {
-    const rows = await sb("bilans?select=*&order=created_at.desc&limit=50");
+    const allRows = await sb("bilans?select=*&order=created_at.desc&limit=50");
+    const rows = (allRows||[]).filter(r=>(r.statut||"Attente de traitement")!=="Traité");
     if(!el) return;
-    if(!rows.length) { el.innerHTML = '<div class="empty"><p>Aucun bilan pour le moment.</p></div>'; return; }
+    if(!rows.length) { el.innerHTML = '<div class="empty"><p>Aucun bilan en attente de traitement.</p></div>'; return; }
     el.innerHTML = rows.map(r=>{
       const statut = r.statut || "Attente de traitement";
       const isTraite = statut==="Traité";
