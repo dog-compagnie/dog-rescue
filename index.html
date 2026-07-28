@@ -810,8 +810,8 @@ tbody tr:hover{background:rgba(41,128,185,0.03);}
           <div class="card-hdr"><div class="card-hdr-title">🆔 Identité de la victime</div></div>
           <div class="card-body">
             <div class="field-row-2">
-              <div class="field"><label>Nom</label><input id="bil-nom" placeholder="NOM" onchange="this.value=formatNom(this.value); lookupPatient();"></div>
-              <div class="field"><label>Prénom</label><input id="bil-prenom" placeholder="Prénom" onchange="this.value=formatPrenom(this.value); lookupPatient();"></div>
+              <div class="field"><label>Nom</label><input id="bil-nom" placeholder="NOM" onchange="this.value=formatNom(this.value); lookupPatient(); updateSmsPreview();"></div>
+              <div class="field"><label>Prénom</label><input id="bil-prenom" placeholder="Prénom" onchange="this.value=formatPrenom(this.value); lookupPatient(); updateSmsPreview();"></div>
             </div>
             <div class="field-row-3">
               <div class="field"><label>Date de naissance</label><input id="bil-naissance" type="date"></div>
@@ -820,7 +820,7 @@ tbody tr:hover{background:rgba(41,128,185,0.03);}
             </div>
             <div class="field-row-2">
               <div class="field"><label>Groupe sanguin</label><input id="bil-groupe" placeholder="Ex : O+, A-, AB+…"></div>
-              <div class="field"><label>Allergie</label><input id="bil-allergie" placeholder="Ex : Pénicilline, arachides…"></div>
+              <div class="field"><label>Allergie</label><input id="bil-allergie" placeholder="Ex : Pénicilline, arachides…" oninput="updateSmsPreview()"></div>
             </div>
             <div id="bil-patient-info"></div>
           </div>
@@ -834,10 +834,10 @@ tbody tr:hover{background:rgba(41,128,185,0.03);}
               <div class="field"><label>Référence (auto)</label><input id="bil-ref" disabled></div>
               <div class="field"><label>Nombre de victimes</label><input id="bil-nb-victimes" type="number" min="1" value="1"></div>
             </div>
-            <div class="field"><label>Nature de l'intervention</label><input id="bil-nature" placeholder="Ex : AVP, malaise, chute…"></div>
+            <div class="field"><label>Nature de l'intervention</label><input id="bil-nature" placeholder="Ex : AVP, malaise, chute…" oninput="updateSmsPreview()"></div>
             <div class="field-row-2">
-              <div class="field"><label>Moyen affecté</label><input id="bil-moyen" placeholder="Ex : Dog 01"></div>
-              <div class="field"><label>Orientation espace/temps</label><input id="bil-orientation" placeholder="Ex : Bien orientée / Désorientée"></div>
+              <div class="field"><label>Moyen affecté</label><input id="bil-moyen" placeholder="Ex : Dog 01" oninput="updateSmsPreview()"></div>
+              <div class="field"><label>Orientation espace/temps</label><input id="bil-orientation" placeholder="Ex : Bien orientée / Désorientée" oninput="updateSmsPreview()"></div>
             </div>
           </div>
         </div>
@@ -845,12 +845,12 @@ tbody tr:hover{background:rgba(41,128,185,0.03);}
         <div class="card">
           <div class="card-hdr"><div class="card-hdr-title">🩺 Bilan clinique</div></div>
           <div class="card-body">
-            <div class="field"><label>Douleurs</label><input id="bil-douleurs" placeholder="Localisation, intensité…"></div>
-            <div class="field"><label>Symptômes (nausées, vertiges, etc.)</label><input id="bil-symptomes" placeholder="Ex : nausées, vertiges…"></div>
+            <div class="field"><label>Douleurs</label><input id="bil-douleurs" placeholder="Localisation, intensité…" oninput="updateSmsPreview()"></div>
+            <div class="field"><label>Symptômes (nausées, vertiges, etc.)</label><input id="bil-symptomes" placeholder="Ex : nausées, vertiges…" oninput="updateSmsPreview()"></div>
             <div class="field"><label>Constantes (facultatif)</label><input id="bil-constantes" placeholder="FC, TA, SpO2, FR…"></div>
-            <div class="field"><label>Antécédents médicaux</label><input id="bil-antecedents" placeholder="Ex : opérations, pathologies connues…"></div>
-            <div class="field"><label>Traitement en cours</label><input id="bil-traitement" placeholder="Ex : anticoagulants…"></div>
-            <div class="field"><label>Maladie chronique</label><input id="bil-maladie-chronique" placeholder="Ex : diabète type 2, asthme…"></div>
+            <div class="field"><label>Antécédents médicaux</label><input id="bil-antecedents" placeholder="Ex : opérations, pathologies connues…" oninput="updateSmsPreview()"></div>
+            <div class="field"><label>Traitement en cours</label><input id="bil-traitement" placeholder="Ex : anticoagulants…" oninput="updateSmsPreview()"></div>
+            <div class="field"><label>Maladie chronique</label><input id="bil-maladie-chronique" placeholder="Ex : diabète type 2, asthme…" oninput="updateSmsPreview()"></div>
             <div style="background:rgba(13,21,32,0.4);border-radius:9px;padding:12px 14px;margin-bottom:14px;">
               <div class="yn-row" style="padding-top:0;">
                 <div class="yn-label">Diabète</div>
@@ -889,6 +889,14 @@ tbody tr:hover{background:rgba(41,128,185,0.03);}
               </div>
             </div>
             <div class="field"><label>Notes / Résumé</label><textarea id="bil-notes" rows="4" placeholder="Résumé de la prise en charge, gestes effectués, devenir de la victime…"></textarea></div>
+          </div>
+        </div>
+
+        <div class="card" style="border:1px solid rgba(240,168,64,0.3);">
+          <div class="card-hdr"><div class="card-hdr-title">📟 Message radio / SMS pompiers <span style="font-weight:400;font-size:11px;color:var(--text3);">(aperçu — non enregistré, non inclus dans le bilan)</span></div></div>
+          <div class="card-body">
+            <div id="bil-sms-preview" style="background:rgba(13,21,32,0.6);border-radius:9px;padding:14px;font-family:monospace;font-size:12.5px;color:#F0A840;line-height:1.7;white-space:pre-wrap;word-break:break-word;">—</div>
+            <button class="btn btn-ghost btn-sm" style="margin-top:10px;" onclick="copierMessageSMS()">📋 Copier le message</button>
           </div>
         </div>
       </div>
@@ -2474,6 +2482,7 @@ async function lookupPatient() {
       if(infoEl) infoEl.innerHTML = `<div style="font-size:12px;color:var(--text2);">Aucun dossier existant — un nouveau dossier patient sera créé à l'enregistrement.</div>`;
     }
   } catch(e) { console.warn("lookupPatient error:", e.message); }
+  updateSmsPreview();
 }
 
 async function nextBilanRef() {
@@ -2501,6 +2510,31 @@ async function nouveauBilan(confirmFirst) {
   document.getElementById("bil-dossier-info").innerHTML = "Renseignez le nom et le prénom pour lier ce bilan au dossier patient.";
   document.querySelectorAll("#page-bilans .yn-btn").forEach(b=>b.classList.remove("active"));
   ["diabete","asthme","alcool","drogue","tabac"].forEach(f=>delete ynState[f]);
+  updateSmsPreview();
+}
+
+function updateSmsPreview() {
+  const val = id => (document.getElementById(id)?.value||"").trim();
+  const unite = val("bil-moyen") || "—";
+  const nature = val("bil-nature") || "—";
+  const identite = `${val("bil-prenom")} ${val("bil-nom")}`.trim() || "—";
+  const douleur = val("bil-douleurs") || "Aucune";
+  const orientation = val("bil-orientation") || "—";
+  const symptomes = val("bil-symptomes") || "Aucun";
+  const m = val("bil-maladie-chronique") || "Aucune";
+  const h = val("bil-antecedents") || "Aucun";
+  const t = val("bil-traitement") || "Aucun";
+  const a = val("bil-allergie") || "Aucune";
+  const msg = `Dog Rescue // ${unite} // ${nature} // ${identite} // Douleur : ${douleur} // Orientation E/T : ${orientation} // Symptômes : ${symptomes} // MHTA : M: ${m} ; H: ${h} ; T: ${t} ; A: ${a} // En attente de régulation.`;
+  const el = document.getElementById("bil-sms-preview");
+  if(el) el.textContent = msg;
+}
+function copierMessageSMS() {
+  const el = document.getElementById("bil-sms-preview");
+  if(!el) return;
+  navigator.clipboard.writeText(el.textContent)
+    .then(()=>toast("✓ Message copié"))
+    .catch(()=>toast("Erreur lors de la copie — sélectionnez et copiez manuellement.","#E74C3C"));
 }
 
 async function initBilanPage() {
