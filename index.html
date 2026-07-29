@@ -4980,6 +4980,26 @@ const TARIF_HEURE_EVENEMENT = 2200;
 let effectifsLogsCache = [];
 let effectifsComptesCache = [];
 
+async function syncStatutsAbsence() {
+  try {
+    const [comptes, absencesRows] = await Promise.all([
+      sb("agents_comptes?select=id,prenom,nom,statut_effectif,statut_avant_absence"),
+      sb("absences?select=agent_nom,date_debut,date_fin,statut&statut=eq.Validée"),
+    ]);
+    const todayStr = todayISO();
+    for(const c of comptes||[]) {
+      const nomComplet = `${c.prenom||""} ${c.nom||""}`.trim();
+      const enAbsenceAujourdhui = (absencesRows||[]).some(a=>a.agent_nom===nomComplet && a.date_debut<=todayStr && a.date_fin>=todayStr);
+      if(enAbsenceAujourdhui && c.statut_effectif!=="Absent") {
+        if(c.statut_effectif==="Démission" || c.statut_effectif==="Licencié") continue;
+        await sb(`agents_comptes?id=eq.${c.id}`,{method:"PATCH",body:JSON.stringify({statut_avant_absence:c.statut_effectif, statut_effectif:"Absent"})});
+      } else if(!enAbsenceAujourdhui && c.statut_effectif==="Absent" && c.statut_avant_absence) {
+        await sb(`agents_comptes?id=eq.${c.id}`,{method:"PATCH",body:JSON.stringify({statut_effectif:c.statut_avant_absence, statut_avant_absence:null})});
+      }
+    }
+  } catch(e) { console.warn("syncStatutsAbsence error:", e.message); }
+}
+
 async function initEffectifsPage() {
   setEffTab("liste");
   await syncStatutsAbsence();
