@@ -302,6 +302,19 @@ tbody tr:hover{background:rgba(41,128,185,0.03);}
 .hier-name{font-size:13px;font-weight:700;color:#fff;margin-bottom:10px;}
 .hier-role-select{width:100%;background:rgba(13,21,32,0.7);border:1px solid rgba(41,128,185,0.25);border-radius:7px;color:#fff;font-size:11px;padding:6px 6px;text-align:center;}
 
+/* GESTION DES EFFECTIFS */
+.eff-card{border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:12px;background:rgba(13,21,32,0.35);transition:border-color 0.15s;}
+.eff-card:hover{border-color:rgba(41,128,185,0.35);}
+.eff-card-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;}
+.eff-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;flex-shrink:0;box-shadow:0 3px 10px rgba(0,0,0,0.3);}
+.eff-nom{font-size:14px;font-weight:800;color:#fff;}
+.eff-role{font-size:11px;color:var(--text2);margin-top:1px;}
+.eff-card-body{border-top:1px solid var(--border);padding-top:14px;}
+.eff-field-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:12px;}
+.eff-heures{display:flex;gap:24px;flex-wrap:wrap;}
+.eff-heures-item{display:flex;flex-direction:column;gap:2px;background:rgba(13,21,32,0.5);border-radius:8px;padding:8px 14px;}
+.eff-heures-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;}
+.eff-heures-val{font-size:15px;font-weight:800;color:#5DADE2;}
 /* ENTRETIEN D'EMBAUCHE */
 .ent-score-bar{background:rgba(13,21,32,0.5);border:1px solid var(--border);border-radius:10px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:13px;font-weight:700;color:#fff;}
 .ent-cat-hdr{font-size:12px;font-weight:800;color:#A8CFEA;text-transform:uppercase;letter-spacing:0.06em;margin:18px 0 10px;display:flex;align-items:center;gap:7px;}
@@ -559,8 +572,8 @@ tbody tr:hover{background:rgba(41,128,185,0.03);}
       <div class="card-hdr"><div class="card-hdr-title">📝 Formulaire de candidature</div></div>
       <div class="card-body">
         <div class="field-row-2">
-          <div class="field"><label>Prénom *</label><input id="cand-prenom" placeholder="Prénom"></div>
-          <div class="field"><label>Nom *</label><input id="cand-nom" placeholder="NOM"></div>
+          <div class="field"><label>Prénom *</label><input id="cand-prenom" placeholder="Prénom" onchange="this.value=formatPrenom(this.value)"></div>
+          <div class="field"><label>Nom *</label><input id="cand-nom" placeholder="NOM" onchange="this.value=formatNom(this.value)"></div>
         </div>
         <div class="field-row-2">
           <div class="field"><label>Âge</label><input id="cand-age" type="number" placeholder="ans" min="18" max="80"></div>
@@ -939,6 +952,89 @@ tbody tr:hover{background:rgba(41,128,185,0.03);}
         <div class="card-hdr"><div class="card-hdr-title">📋 Détail du dossier</div></div>
         <div class="card-body" id="patient-detail"><div class="empty"><p>Sélectionnez un patient dans la liste.</p></div></div>
       </div>
+    </div>
+  </div>
+
+  <div class="page" id="page-effectifs">
+    <div class="page-title">Gestion des <span>effectifs</span></div>
+    <div class="page-sub">Statuts, dates, heures de service, événements et fiches de paie.</div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+      <button class="btn btn-sm btn-primary" id="eff-tab-liste" onclick="setEffTab('liste')">👥 Effectifs</button>
+      <button class="btn btn-sm btn-ghost" id="eff-tab-evenements" onclick="setEffTab('evenements')">🎉 Événements</button>
+      <button class="btn btn-sm btn-ghost" id="eff-tab-paie" onclick="setEffTab('paie')">💰 Fiches de paie</button>
+    </div>
+
+    <div id="eff-panel-liste">
+      <div class="card">
+        <div class="card-hdr"><div class="card-hdr-title">👥 Liste des effectifs</div></div>
+        <div class="card-body" id="effectifs-list"><div class="empty"><p>Chargement…</p></div></div>
+      </div>
+      <div class="card">
+        <div class="card-hdr"><div class="card-hdr-title">🗄️ Anciens agents</div></div>
+        <div class="card-body" id="anciens-agents-list"><div class="empty"><p>Chargement…</p></div></div>
+      </div>
+    </div>
+
+    <div id="eff-panel-evenements" style="display:none;">
+      <div class="card" style="max-width:600px;">
+        <div class="card-hdr"><div class="card-hdr-title">➕ Nouvel événement</div></div>
+        <div class="card-body">
+          <div class="field-row-2">
+            <div class="field"><label>Nom de l'événement</label><input id="evt-nom" placeholder="Ex : Convoi VIP, Soirée…"></div>
+            <div class="field"><label>Date</label><input id="evt-date" type="date"></div>
+          </div>
+          <div class="field"><label>Heures de présence (appliquées à tous ceux marqués « Présent »)</label><input id="evt-heures" type="number" min="0" step="0.5" placeholder="Ex : 3"></div>
+          <button class="btn btn-primary btn-full" onclick="creerEvenement()">Créer l'événement</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hdr"><div class="card-hdr-title">📋 Événements</div></div>
+        <div class="card-body" id="evenements-list"><div class="empty"><p>Chargement…</p></div></div>
+      </div>
+    </div>
+
+    <div id="eff-panel-paie" style="display:none;">
+      <div class="card">
+        <div class="card-hdr"><div class="card-hdr-title">📚 Historique des fiches de paie</div></div>
+        <div class="card-body" id="paie-history"><div class="empty"><p>Chargement…</p></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="paie-modal" class="alert-popup">
+    <div class="alert-popup-box" style="max-width:600px;max-height:88vh;overflow-y:auto;text-align:left;">
+      <div class="alert-popup-title" style="text-align:center;">💰 Fiche de paie</div>
+      <div class="field-row-2">
+        <div class="field"><label>Agent</label><input id="paie-agent" disabled></div>
+        <div class="field"><label>Période (mois précédent)</label><input id="paie-periode" disabled></div>
+      </div>
+
+      <div class="card-hdr" style="border-radius:10px;margin:16px 0 10px;"><div class="card-hdr-title">🕐 Salaire de base</div></div>
+      <div class="field-row-2">
+        <div class="field">
+          <label>Heures de service <span style="color:#52D98B;font-weight:700;">— calculées automatiquement</span></label>
+          <input type="number" id="paie-heures" step="1" min="0" oninput="recomputePaie()">
+        </div>
+        <div class="field"><label>Salaire de base (200 € / heure)</label><input id="paie-salaire-base" disabled></div>
+      </div>
+      <div style="font-size:10.5px;color:var(--text3);margin:-8px 0 4px;">Basées sur les heures réellement pointées sur le mois précédent — modifiable manuellement si besoin.</div>
+
+      <div class="card-hdr" style="border-radius:10px;margin:18px 0 10px;"><div class="card-hdr-title">🎉 Primes</div></div>
+      <div style="font-size:10.5px;color:var(--text3);margin-bottom:8px;">Les présences « Présent » à un événement du mois (voir onglet Événements) sont ajoutées ici automatiquement, à ${TARIF_HEURE_EVENEMENT.toLocaleString("fr-FR")} € par heure de présence.</div>
+      <div class="field">
+        <label>Ajouter une prime manuelle</label>
+        <div style="display:flex;gap:8px;">
+          <input id="paie-prime-libelle" placeholder="Libellé" style="flex:1;background:rgba(13,21,32,0.7);border:1px solid rgba(41,128,185,0.25);border-radius:8px;color:#fff;font-size:13px;padding:8px 10px;">
+          <input id="paie-prime-montant" type="number" placeholder="Montant €" style="width:110px;background:rgba(13,21,32,0.7);border:1px solid rgba(41,128,185,0.25);border-radius:8px;color:#fff;font-size:13px;padding:8px 10px;">
+          <button class="btn btn-ghost btn-sm" onclick="ajouterPrimeManuelle()">+ Ajouter</button>
+        </div>
+      </div>
+      <div id="paie-primes-liste" style="margin-top:6px;"></div>
+      <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:800;color:#fff;padding:12px 0;border-top:1px solid var(--border);margin-top:10px;">TOTAL <span id="paie-total" style="color:#52D98B;">0,00 €</span></div>
+      <button class="btn btn-primary btn-full" style="margin-top:10px;" onclick="apercuFichePaie()">👁 Aperçu &amp; Impression</button>
+      <button class="btn btn-success btn-full" style="margin-top:8px;" onclick="enregistrerFichePaie()">💾 Enregistrer la fiche de paie</button>
+      <button class="btn btn-ghost btn-full" style="margin-top:8px;" onclick="closePaieModal()">Fermer</button>
     </div>
   </div>
 
@@ -1391,6 +1487,12 @@ const JOURNAL_TYPES = {
   entretien_maj:        {color:"#C8A0E8", label:"Candidature"},
   devis_enregistre:     {color:"#2980B9", label:"Devis"},
   devis_supprime:       {color:"#F08080", label:"Devis"},
+  effectif_statut:      {color:"#5DADE2", label:"Effectifs"},
+  heures_ajustees:      {color:"#F0A840", label:"Effectifs"},
+  evenement_cree:       {color:"#9B59B6", label:"Effectifs"},
+  evenement_supprime:   {color:"#F08080", label:"Effectifs"},
+  fiche_paie_creee:     {color:"#52D98B", label:"Effectifs"},
+  fiche_paie_suppr:     {color:"#F08080", label:"Effectifs"},
   bilan_enregistre:     {color:"#C0392B", label:"Bilan"},
   bilan_supprime:       {color:"#F08080", label:"Bilan"},
   bilan_traite:         {color:"#52D98B", label:"Bilan"},
@@ -3052,7 +3154,7 @@ function renderJournal() {
   const statsEl = document.getElementById("journal-stats");
   const filterEl = document.getElementById("journal-filter-bar");
   if(!el) return;
-  const cats = ["Candidature","Absence","Intervention","Compte","Service","Alerte","Évaluation","Document","Devis","Bilan"];
+  const cats = ["Candidature","Absence","Intervention","Compte","Service","Alerte","Évaluation","Document","Devis","Bilan","Effectifs"];
   if(statsEl) {
     statsEl.innerHTML = cats.map(cat=>{
       const n = allLogsJournal.filter(l=>journalMeta(l.type).label===cat).length;
@@ -3152,6 +3254,7 @@ const NAV_CONFIG = [
   {page:"evaluations",      icon:"🎯", label:"Évaluations ambulanciers",    roles:["responsable","pdg","admin"],                 section:"Gestion", badgeId:"nav-badge-eval"},
   {page:"doc-rh",           icon:"🗂️", label:"Documents RH",          roles:["responsable","pdg","admin"],                 section:"Gestion"},
   {page:"devis",            icon:"🧾", label:"Devis clients",         roles:["pdg","admin"],                               section:"Gestion"},
+  {page:"effectifs",        icon:"👥", label:"Gestion des effectifs", roles:["responsable","pdg","admin"],                 section:"Gestion"},
   {page:"admin-comptes",    icon:"⚙️", label:"Gestion des comptes",   roles:["pdg","admin"],                       section:"Administration"},
   {page:"journal",          icon:"🗒️", label:"Journal d'activité",    roles:["admin"],                             section:"Administration"},
   {page:"candidature-form", icon:"📝", label:"Candidater au service", roles:["candidat"],                          section:""},
@@ -3208,6 +3311,7 @@ function goPage(pageId) {
     if(cdgTab) cdgTab.style.display = isComiteDirection() ? "inline-flex" : "none";
   }
   if(pageId==="devis")             initDevisPage();
+  if(pageId==="effectifs")         initEffectifsPage();
   if(pageId==="incident")          { prefillDocDates(); loadDocHistory("incident"); }
   if(pageId==="bilans")            initBilanPage();
   if(pageId==="dossiers-patients") loadPatientsList();
@@ -4032,8 +4136,8 @@ function toggleYN(btn) {
 }
 
 async function soumettreCandidat() {
-  const prenom=document.getElementById("cand-prenom").value.trim();
-  const nom=document.getElementById("cand-nom").value.trim();
+  const prenom=formatPrenom(document.getElementById("cand-prenom").value);
+  const nom=formatNom(document.getElementById("cand-nom").value);
   const motiv=document.getElementById("cand-motiv").value.trim();
   const discord=document.getElementById("cand-discord").value.trim();
   if(!prenom||!nom||!motiv||!discord){toast("Merci de remplir les champs obligatoires (Prénom, Nom, Discord, Motivation).","#E74C3C");return;}
@@ -4511,13 +4615,13 @@ function filterAbsences(statut) {
 
 async function updateAbsence(id, statut) {
   const a = absences.find(x=>String(x.id)===String(id));
-  try{await sb(`absences?id=eq.${id}`,{method:"PATCH",body:JSON.stringify({statut})}); if(a) logActivity("absence_statut", `L'absence de ${a.agent_nom} est passée en ${statut.toLowerCase()}`); await loadAll();}
+  try{await sb(`absences?id=eq.${id}`,{method:"PATCH",body:JSON.stringify({statut})}); if(a) logActivity("absence_statut", `L'absence de ${a.agent_nom} est passée en ${statut.toLowerCase()}`); await loadAll(); await syncStatutsAbsence();}
   catch(e){toast("Erreur","#E74C3C");}
 }
 async function suppAbsence(id) {
   if(!confirm("Supprimer cette déclaration ?")) return;
   const a = absences.find(x=>String(x.id)===String(id));
-  try{await sb(`absences?id=eq.${id}`,{method:"DELETE"}); if(a) logActivity("absence_suppr", `Absence de ${a.agent_nom} supprimée`); await loadAll();}
+  try{await sb(`absences?id=eq.${id}`,{method:"DELETE"}); if(a) logActivity("absence_suppr", `Absence de ${a.agent_nom} supprimée`); await loadAll(); await syncStatutsAbsence();}
   catch(e){toast("Erreur","#E74C3C");}
 }
 
@@ -4865,6 +4969,575 @@ function renderMesServices(logs) {
 }
 
 // ─── LOGS PDG/RESPONSABLE ──────────────────────────────────────────
+// ─── GESTION DES EFFECTIFS ───────────────────────────────────────────
+const STATUT_EFFECTIF_OPTIONS = ["En service","Absent","Sanction","En duo","En duo responsable","Hors Service","Démission","Licencié"];
+const STATUT_EFFECTIF_COLORS = {
+  "En service":"#52D98B", "Absent":"#F0A840", "Sanction":"#E74C3C", "En duo":"#5DADE2",
+  "En duo responsable":"#7D3C98", "Hors Service":"#7F9AB0", "Démission":"#C0392B", "Licencié":"#8B1A1A",
+};
+const TARIF_HEURE_SERVICE = 200;
+const TARIF_HEURE_EVENEMENT = 2200;
+let effectifsLogsCache = [];
+let effectifsComptesCache = [];
+
+async function initEffectifsPage() {
+  setEffTab("liste");
+  await syncStatutsAbsence();
+  await loadEffectifsList();
+  loadEvenementsList();
+  loadPaieHistory();
+}
+
+function setEffTab(tab) {
+  ["liste","evenements","paie"].forEach(t=>{
+    const panel = document.getElementById("eff-panel-"+t);
+    if(panel) panel.style.display = t===tab ? "block" : "none";
+    const btn = document.getElementById("eff-tab-"+t);
+    if(btn) { btn.classList.toggle("btn-primary", t===tab); btn.classList.toggle("btn-ghost", t!==tab); }
+  });
+}
+
+async function loadEffectifsList() {
+  const el = document.getElementById("effectifs-list");
+  try {
+    const [comptes, logs, ajustements] = await Promise.all([
+      sb("agents_comptes?select=*&order=nom"),
+      sb("services_logs?select=agent_nom,debut,duree_minutes&order=debut.desc&limit=5000"),
+      sb("ajustements_heures?select=*&limit=2000"),
+    ]);
+    effectifsLogsCache = logs||[];
+    effectifsAjustementsCache = ajustements||[];
+    effectifsComptesCache = (comptes||[]).filter(c=>!TEST_ACCOUNT_NAMES.includes(`${c.prenom||""} ${c.nom||""}`.trim()));
+    renderEffectifsList(effectifsComptesCache);
+    loadAnciensAgents();
+  } catch(e) { if(el) el.innerHTML = '<div class="empty"><p>Erreur de chargement.</p></div>'; }
+}
+
+let effectifsAjustementsCache = [];
+function fmtHeuresMin(totalMinutes) {
+  const sign = totalMinutes<0 ? "-" : "";
+  const abs = Math.abs(Math.round(totalMinutes));
+  const h = Math.floor(abs/60);
+  const m = abs%60;
+  return `${sign}${h}h${m>0?String(m).padStart(2,"0"):""}`;
+}
+function heuresPourAgent(nomComplet, filterMonth, filterYear) {
+  const minsLogs = effectifsLogsCache
+    .filter(l=>l.agent_nom===nomComplet && l.duree_minutes)
+    .filter(l=>{
+      if(filterMonth===undefined) return true;
+      const d = new Date(l.debut);
+      return d.getMonth()===filterMonth && d.getFullYear()===filterYear;
+    })
+    .reduce((s,l)=>s+(l.duree_minutes||0),0);
+  const minsAdj = effectifsAjustementsCache
+    .filter(a=>a.agent_nom===nomComplet)
+    .filter(a=>{
+      if(filterMonth===undefined) return true;
+      return a.mois===filterMonth+1 && a.annee===filterYear;
+    })
+    .reduce((s,a)=>s+(a.minutes||0),0);
+  return minsLogs + minsAdj; // en minutes
+}
+
+function renderEffectifsList(comptesAll) {
+  const el = document.getElementById("effectifs-list");
+  if(!el) return;
+  const comptes = comptesAll.filter(c=>(c.statut_effectif||"En service")!=="Démission" && (c.statut_effectif||"En service")!=="Licencié");
+  if(!comptes.length) { el.innerHTML = '<div class="empty"><p>Aucun effectif actif.</p></div>'; return; }
+  const roleLabels = {agent:"Ambulancier", responsable:"Responsable", pdg:"PDG"};
+  const now = new Date();
+  const sorted = [...comptes].sort((a,b)=>`${a.prenom||""} ${a.nom||""}`.trim().localeCompare(`${b.prenom||""} ${b.nom||""}`.trim(),"fr",{sensitivity:"base"}));
+  el.innerHTML = sorted.map(c=>{
+    const nomComplet = `${c.prenom||""} ${c.nom||""}`.trim();
+    const initials = `${(c.prenom||"?")[0]||""}${(c.nom||"?")[0]||""}`.toUpperCase();
+    const statut = c.statut_effectif || "En service";
+    const isDeparted = statut==="Démission" || statut==="Licencié";
+    const statutColor = STATUT_EFFECTIF_COLORS[statut]||"#7F9AB0";
+    const heuresTotal = fmtHeuresMin(heuresPourAgent(nomComplet));
+    const heuresMois = fmtHeuresMin(heuresPourAgent(nomComplet, now.getMonth(), now.getFullYear()));
+    return `<div class="eff-card">
+      <div class="eff-card-top">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="eff-avatar" style="background:linear-gradient(135deg,${statutColor},${statutColor}99);">${esc(initials)}</div>
+          <div>
+            <div class="eff-nom">${esc(nomComplet)}</div>
+            <div class="eff-role">${roleLabels[c.role]||c.role}</div>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="ouvrirFichePaie('${esc(nomComplet)}')">📄 Fiche de paie</button>
+      </div>
+      <div class="eff-card-body">
+        <div class="eff-field-row">
+          <div class="field">
+            <label>Statut</label>
+            <select onchange="updateStatutEffectif('${c.id}', this.value)" style="border-color:${statutColor}66;color:${statutColor};font-weight:700;">
+              ${STATUT_EFFECTIF_OPTIONS.map(s=>`<option value="${s}" ${s===statut?"selected":""}>${s}</option>`).join("")}
+            </select>
+          </div>
+          <div class="field"><label>Date de recrutement</label><input type="date" value="${c.date_recrutement||""}" onchange="updateDateRecrutement('${c.id}', this.value)"></div>
+          ${isDeparted ? `<div class="field"><label>Date de départ</label><input type="date" value="${c.date_depart||""}" onchange="updateDateDepart('${c.id}', this.value)"></div>` : ""}
+        </div>
+        <div class="eff-heures">
+          <div class="eff-heures-item"><span class="eff-heures-lbl">Heures totales</span><span class="eff-heures-val">${heuresTotal}</span></div>
+          <div class="eff-heures-item"><span class="eff-heures-lbl">Heures ce mois-ci</span><span class="eff-heures-val">${heuresMois}</span></div>
+          ${role==="admin" ? `<button class="btn btn-ghost btn-sm" onclick="ajusterHeures('${esc(nomComplet)}')" title="Ajouter ou retirer des heures pour le mois en cours (ex : reprise de l'ancien site)">⚙️ Ajuster (mois en cours)</button>` : ""}
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function fmtDureeService(dateDebutStr, dateFinStr) {
+  if(!dateDebutStr) return "Durée de service inconnue";
+  const debut = new Date(dateDebutStr+"T00:00:00");
+  const fin = dateFinStr ? new Date(dateFinStr+"T00:00:00") : new Date();
+  let months = (fin.getFullYear()-debut.getFullYear())*12 + (fin.getMonth()-debut.getMonth());
+  if(fin.getDate() < debut.getDate()) months--;
+  if(months<0) months=0;
+  const years = Math.floor(months/12);
+  const remMonths = months%12;
+  if(months<1) {
+    const days = Math.max(1, Math.round((fin-debut)/(1000*3600*24)));
+    return `${days} jour${days>1?"s":""} de service`;
+  }
+  const parts = [];
+  if(years>0) parts.push(`${years} an${years>1?"s":""}`);
+  if(remMonths>0) parts.push(`${remMonths} mois`);
+  return (parts.join(" ")||"moins d'un mois") + " de service";
+}
+async function loadAnciensAgents() {
+  const el = document.getElementById("anciens-agents-list");
+  if(!el) return;
+  try {
+    const rows = await sb("anciens_agents?select=*&order=nom");
+    const archive = (rows||[]).filter(a=>!TEST_ACCOUNT_NAMES.includes(`${a.prenom||""} ${a.nom||""}`.trim()));
+    // Un ancien agent dont l'identité correspond à un compte actuellement actif (statut ≠ Démission/Licencié) est considéré comme revenu
+    const revenus = new Set(
+      effectifsComptesCache
+        .filter(c=>(c.statut_effectif||"En service")!=="Démission" && (c.statut_effectif||"En service")!=="Licencié")
+        .map(c=>`${c.prenom||""} ${c.nom||""}`.trim())
+    );
+    const anciens = archive.filter(a=>!revenus.has(`${a.prenom||""} ${a.nom||""}`.trim()))
+      .sort((a,b)=>`${a.prenom||""} ${a.nom||""}`.trim().localeCompare(`${b.prenom||""} ${b.nom||""}`.trim(),"fr",{sensitivity:"base"}));
+    if(!anciens.length) { el.innerHTML = '<div class="empty"><p>Aucun ancien agent.</p></div>'; return; }
+    const roleLabels = {agent:"Ambulancier", responsable:"Responsable", pdg:"PDG"};
+    el.innerHTML = anciens.map(a=>{
+      const compteActif = effectifsComptesCache.find(c=>`${c.prenom||""} ${c.nom||""}`.trim()===`${a.prenom||""} ${a.nom||""}`.trim());
+      const initials = `${(a.prenom||"?")[0]||""}${(a.nom||"?")[0]||""}`.toUpperCase();
+      const reactivation = compteActif ? `
+        <select onchange="reactiverAncienAgent('${compteActif.id}', this.value)" style="background:rgba(13,21,32,0.7);border:1px solid rgba(41,128,185,0.25);border-radius:7px;color:#fff;font-size:11px;padding:6px 8px;">
+          <option value="" selected disabled>↩️ Réactiver avec le statut…</option>
+          ${STATUT_EFFECTIF_OPTIONS.filter(s=>s!=="Démission" && s!=="Licencié").map(s=>`<option value="${s}">${s}</option>`).join("")}
+        </select>` : `<span style="font-size:10px;color:var(--text3);font-style:italic;">Compte supprimé</span>`;
+      return `<div class="eff-card" style="opacity:0.88;">
+        <div class="eff-card-top">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div class="eff-avatar" style="background:linear-gradient(135deg,#8B1A1A,#5a1010);">${esc(initials)}</div>
+            <div>
+              <div class="eff-nom">${esc(a.prenom)} ${esc(a.nom)} <span style="font-size:10px;font-weight:700;color:#F08080;background:rgba(240,128,128,0.12);border:1px solid rgba(240,128,128,0.3);border-radius:8px;padding:2px 8px;margin-left:4px;">Ancien agent</span></div>
+              <div class="eff-role">${roleLabels[a.role]||a.role||"—"}</div>
+            </div>
+          </div>
+          ${reactivation}
+        </div>
+        <div class="eff-card-body">
+          <div class="eff-heures">
+            <div class="eff-heures-item"><span class="eff-heures-lbl">Statut de départ</span><span class="eff-heures-val" style="color:#F08080;font-size:13px;">${esc(a.statut_depart)}</span></div>
+            <div class="eff-heures-item"><span class="eff-heures-lbl">Recruté le</span><span class="eff-heures-val" style="font-size:13px;">${a.date_recrutement?new Date(a.date_recrutement+"T12:00:00").toLocaleDateString("fr-FR"):"—"}</span></div>
+            <div class="eff-heures-item"><span class="eff-heures-lbl">Départ le</span><span class="eff-heures-val" style="font-size:13px;">${a.date_depart?new Date(a.date_depart+"T12:00:00").toLocaleDateString("fr-FR"):"—"}</span></div>
+            <div class="eff-heures-item"><span class="eff-heures-lbl">Durée</span><span class="eff-heures-val" style="font-size:13px;color:#F0A840;">${fmtDureeService(a.date_recrutement, a.date_depart)}</span></div>
+          </div>
+        </div>
+      </div>`;
+    }).join("");
+  } catch(e) { el.innerHTML = '<div class="empty"><p>Erreur de chargement.</p></div>'; }
+}
+async function reactiverAncienAgent(compteId, statut) {
+  if(!statut) return;
+  await updateStatutEffectif(compteId, statut);
+}
+
+async function ajusterHeures(nomComplet) {
+  if(role!=="admin") { toast("Réservé à l'Admin.","#E74C3C"); return; }
+  const input = prompt(`Ajuster les heures de ${nomComplet} pour le mois en cours.\nEntrez un nombre d'heures au format décimal, positif pour ajouter, négatif pour retirer (ex : 2.5 pour 2h30, -1 pour retirer 1h) :`);
+  if(input===null) return;
+  const heures = parseFloat(input.replace(",","."));
+  if(isNaN(heures) || heures===0) { toast("Valeur invalide.","#E74C3C"); return; }
+  const raison = prompt("Raison de l'ajustement (ex : reprise des heures de l'ancien site) :", "Reprise des heures de l'ancien site") || "";
+  const now = new Date();
+  try {
+    const r = await fetch(SB_URL+"/rest/v1/ajustements_heures", {
+      method:"POST", headers:{...H,"Prefer":"return=minimal"}, mode:"cors",
+      body: JSON.stringify({agent_nom:nomComplet, mois:now.getMonth()+1, annee:now.getFullYear(), minutes:Math.round(heures*60), raison, created_by:identityLabel()})
+    });
+    if(!r.ok) throw new Error(await r.text());
+    logActivity("heures_ajustees", `Ajustement de ${heures>0?"+":""}${fmtHeuresMin(heures*60)} pour ${nomComplet}${raison?" ("+raison+")":""}`);
+    toast("✓ Ajustement enregistré");
+    loadEffectifsList();
+  } catch(e) { toast("Erreur : "+e.message,"#E74C3C"); }
+}
+
+async function updateStatutEffectif(id, statut) {
+  try {
+    const payload = {statut_effectif: statut, statut_avant_absence: null};
+    if(statut!=="Démission" && statut!=="Licencié") payload.date_depart = null;
+    await sb(`agents_comptes?id=eq.${id}`,{method:"PATCH",body:JSON.stringify(payload)});
+    logActivity("effectif_statut", `Statut d'effectif mis à jour : ${statut}`);
+    if(statut==="Démission" || statut==="Licencié") {
+      const c = effectifsComptesCache.find(x=>String(x.id)===String(id));
+      if(c) await archiverAncienAgent(c, statut);
+    }
+    toast("✓ Statut mis à jour");
+    loadEffectifsList();
+  } catch(e) { toast("Erreur : "+e.message,"#E74C3C"); }
+}
+async function archiverAncienAgent(c, statut) {
+  try {
+    const payload = {
+      nom: c.nom, prenom: c.prenom, role: c.role,
+      date_recrutement: c.date_recrutement||null,
+      date_depart: c.date_depart || todayISO(),
+      statut_depart: statut,
+      archived_at: new Date().toISOString(),
+    };
+    const existing = await sb(`anciens_agents?nom=eq.${encodeURIComponent(c.nom)}&prenom=eq.${encodeURIComponent(c.prenom)}&select=id`);
+    if(existing && existing.length) {
+      await sb(`anciens_agents?id=eq.${existing[0].id}`, {method:"PATCH", body:JSON.stringify(payload)});
+    } else {
+      await fetch(SB_URL+"/rest/v1/anciens_agents", {method:"POST", headers:{...H,"Prefer":"return=minimal"}, mode:"cors", body:JSON.stringify(payload)});
+    }
+  } catch(e) { console.warn("archiverAncienAgent error:", e.message); }
+}
+async function updateDateRecrutement(id, val) {
+  try {
+    await sb(`agents_comptes?id=eq.${id}`,{method:"PATCH",body:JSON.stringify({date_recrutement: val||null})});
+    toast("✓ Date de recrutement mise à jour");
+  } catch(e) { toast("Erreur : "+e.message,"#E74C3C"); }
+}
+async function updateDateDepart(id, val) {
+  try {
+    await sb(`agents_comptes?id=eq.${id}`,{method:"PATCH",body:JSON.stringify({date_depart: val||null})});
+    toast("✓ Date de départ mise à jour");
+  } catch(e) { toast("Erreur : "+e.message,"#E74C3C"); }
+}
+
+// ─── ÉVÉNEMENTS & PRÉSENCES ──────────────────────────────────────────
+async function creerEvenement() {
+  const nom = document.getElementById("evt-nom").value.trim();
+  const date = document.getElementById("evt-date").value;
+  const heuresDefaut = parseFloat(document.getElementById("evt-heures").value)||null;
+  if(!nom || !date) { toast("Merci d'indiquer le nom et la date de l'événement.","#E74C3C"); return; }
+  try {
+    const r = await fetch(SB_URL+"/rest/v1/evenements", {
+      method:"POST", headers:{...H,"Prefer":"return=representation"}, mode:"cors",
+      body: JSON.stringify({nom, date_evenement:date, heures_defaut:heuresDefaut, created_by:identityLabel()})
+    });
+    if(!r.ok) throw new Error(await r.text());
+    const created = await r.json();
+    const evtId = created && created[0] && created[0].id;
+    const comptes = await sb("agents_comptes?select=prenom,nom");
+    const presencesPayload = (comptes||[])
+      .filter(c=>!TEST_ACCOUNT_NAMES.includes(`${c.prenom||""} ${c.nom||""}`.trim()))
+      .map(c=>({
+        evenement_id: evtId, agent_nom: `${c.prenom||""} ${c.nom||""}`.trim(), statut:"Non répondu"
+      }));
+    if(presencesPayload.length) {
+      await fetch(SB_URL+"/rest/v1/evenement_presences", {method:"POST", headers:{...H,"Prefer":"return=minimal"}, mode:"cors", body:JSON.stringify(presencesPayload)});
+    }
+    logActivity("evenement_cree", `Événement créé : ${nom}`);
+    toast("✓ Événement créé");
+    document.getElementById("evt-nom").value = "";
+    document.getElementById("evt-date").value = "";
+    document.getElementById("evt-heures").value = "";
+    loadEvenementsList();
+  } catch(e) { toast("Erreur : "+e.message,"#E74C3C"); }
+}
+
+async function loadEvenementsList() {
+  const el = document.getElementById("evenements-list");
+  try {
+    const rows = await sb("evenements?select=*&order=date_evenement.desc&limit=100");
+    if(!el) return;
+    if(!rows.length) { el.innerHTML = '<div class="empty"><p>Aucun événement créé.</p></div>'; return; }
+    el.innerHTML = rows.map(e=>`
+      <div style="border:1px solid var(--border);border-radius:10px;margin-bottom:10px;overflow:hidden;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;">
+          <div style="cursor:pointer;flex:1;" onclick="toggleEvenementDetail('${e.id}')"><div style="font-size:13px;font-weight:700;color:#fff;">${esc(e.nom)}</div><div style="font-size:11px;color:var(--text2);">${e.date_evenement?new Date(e.date_evenement+"T12:00:00").toLocaleDateString("fr-FR"):"—"}</div></div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:11px;color:var(--blue-light);cursor:pointer;" onclick="toggleEvenementDetail('${e.id}')">▾ Présences</span>
+            ${role==="admin"?`<button class="btn btn-danger btn-sm" onclick="supprimerEvenement('${e.id}')">🗑</button>`:""}
+          </div>
+        </div>
+        <div id="evt-detail-${e.id}" style="display:none;padding:0 14px 14px;"></div>
+      </div>`).join("");
+  } catch(e) { if(el) el.innerHTML = '<div class="empty"><p>Erreur de chargement.</p></div>'; }
+}
+async function supprimerEvenement(id) {
+  if(role!=="admin") { toast("Seul l'Admin peut supprimer un événement.","#E74C3C"); return; }
+  if(!confirm("Supprimer définitivement cet événement et toutes les présences associées ?")) return;
+  try {
+    await sb(`evenements?id=eq.${id}`,{method:"DELETE"});
+    logActivity("evenement_supprime","Événement supprimé");
+    toast("✓ Événement supprimé");
+    loadEvenementsList();
+  } catch(e) { toast("Erreur : "+e.message,"#E74C3C"); }
+}
+
+async function toggleEvenementDetail(evtId) {
+  const el = document.getElementById("evt-detail-"+evtId);
+  if(!el) return;
+  if(el.style.display==="block") { el.style.display="none"; return; }
+  el.style.display = "block";
+  await renderEvenementDetail(evtId);
+}
+async function renderEvenementDetail(evtId) {
+  const el = document.getElementById("evt-detail-"+evtId);
+  if(!el) return;
+  el.innerHTML = '<div class="empty"><p>Chargement…</p></div>';
+  try {
+    const [rows, evtRows] = await Promise.all([
+      sb(`evenement_presences?evenement_id=eq.${evtId}&select=*&order=agent_nom`),
+      sb(`evenements?id=eq.${evtId}&select=heures_defaut`),
+    ]);
+    const heuresDefaut = (evtRows && evtRows[0] && evtRows[0].heures_defaut) || "";
+    let html = `<div style="display:flex;align-items:center;gap:8px;padding:10px 0 14px;flex-wrap:wrap;">
+      <label style="font-size:11px;color:var(--text2);">Heures de présence (pour tous ceux marqués « Présent ») :</label>
+      <input type="number" min="0" step="0.5" id="evt-heures-defaut-${evtId}" value="${heuresDefaut}" style="width:80px;background:rgba(13,21,32,0.7);border:1px solid rgba(41,128,185,0.25);border-radius:7px;color:#fff;font-size:12px;padding:5px 7px;">
+      <button class="btn btn-ghost btn-sm" onclick="updateHeuresEvenement('${evtId}')">💾 Appliquer</button>
+    </div>`;
+    html += (rows||[]).map(p=>`
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:8px 0;border-top:1px solid var(--border);">
+        <div style="font-size:12px;color:#fff;min-width:150px;">${esc(p.agent_nom)}</div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <button class="btn btn-sm ${p.statut==="Présent"?"btn-success":"btn-ghost"}" onclick="setPresenceStatut('${p.id}','Présent','${evtId}')">Présent</button>
+          <button class="btn btn-sm ${p.statut==="Absent"?"btn-danger":"btn-ghost"}" onclick="setPresenceStatut('${p.id}','Absent','${evtId}')">Absent</button>
+          <button class="btn btn-sm ${p.statut==="Non répondu"?"btn-primary":"btn-ghost"}" onclick="setPresenceStatut('${p.id}','Non répondu','${evtId}')">Non répondu</button>
+          ${p.statut==="Présent" ? `<span style="font-size:11px;color:var(--text2);">${p.heures?p.heures+" h":"— h"}</span>` : ""}
+        </div>
+      </div>`).join("");
+    el.innerHTML = html;
+  } catch(e) { el.innerHTML = '<div class="empty"><p>Erreur de chargement.</p></div>'; }
+}
+async function updateHeuresEvenement(evtId) {
+  const inp = document.getElementById("evt-heures-defaut-"+evtId);
+  if(!inp) return;
+  const heures = parseFloat(inp.value);
+  if(isNaN(heures) || heures<0) { toast("Valeur invalide.","#E74C3C"); return; }
+  try {
+    await sb(`evenements?id=eq.${evtId}`,{method:"PATCH",body:JSON.stringify({heures_defaut:heures})});
+    await sb(`evenement_presences?evenement_id=eq.${evtId}&statut=eq.Présent`,{method:"PATCH",body:JSON.stringify({heures, updated_at:new Date().toISOString()})});
+    toast("✓ Heures appliquées à tous les présents");
+    renderEvenementDetail(evtId);
+  } catch(e) { toast("Erreur : "+e.message,"#E74C3C"); }
+}
+async function setPresenceStatut(presenceId, statut, evtId) {
+  try {
+    const payload = {statut, updated_at:new Date().toISOString()};
+    if(statut==="Présent") {
+      const evtRows = await sb(`evenements?id=eq.${evtId}&select=heures_defaut`);
+      payload.heures = (evtRows && evtRows[0] && evtRows[0].heures_defaut) || null;
+    } else {
+      payload.heures = null;
+    }
+    await sb(`evenement_presences?id=eq.${presenceId}`,{method:"PATCH",body:JSON.stringify(payload)});
+    renderEvenementDetail(evtId);
+  } catch(e) { toast("Erreur : "+e.message,"#E74C3C"); }
+}
+
+// ─── FICHES DE PAIE ───────────────────────────────────────────────
+let currentPaieAgent = null;
+let currentPaieMois = null;
+let currentPaieAnnee = null;
+let paiePrimes = [];
+
+async function ouvrirFichePaie(agentNom) {
+  currentPaieAgent = agentNom;
+  const now = new Date();
+  let mois = now.getMonth() - 1; // mois précédent (0-indexé)
+  let annee = now.getFullYear();
+  if(mois<0) { mois = 11; annee -= 1; }
+  currentPaieMois = mois;
+  currentPaieAnnee = annee;
+  const moisNoms = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+
+  document.getElementById("paie-agent").value = agentNom;
+  document.getElementById("paie-periode").value = `${moisNoms[mois]} ${annee}`;
+  const heuresCalc = Math.round(heuresPourAgent(agentNom, mois, annee)/60);
+  document.getElementById("paie-heures").value = heuresCalc;
+
+  paiePrimes = [];
+  try {
+    const [presences, evenements] = await Promise.all([
+      sb(`evenement_presences?agent_nom=eq.${encodeURIComponent(agentNom)}&statut=eq.Présent&select=*`),
+      sb(`evenements?select=id,nom,date_evenement`),
+    ]);
+    const evtById = {};
+    (evenements||[]).forEach(e=>{ evtById[e.id] = e; });
+    (presences||[]).forEach(p=>{
+      const evt = evtById[p.evenement_id];
+      if(!evt || !evt.date_evenement || !p.heures) return;
+      const d = new Date(evt.date_evenement);
+      if(d.getMonth()===mois && d.getFullYear()===annee) {
+        paiePrimes.push({libelle:`Prime événement — ${evt.nom} (${p.heures} h × ${fmtEuro(TARIF_HEURE_EVENEMENT)})`, montant: p.heures*TARIF_HEURE_EVENEMENT, auto:true});
+      }
+    });
+  } catch(e) { console.warn("chargement primes événements:", e.message); }
+
+  recomputePaie();
+  document.getElementById("paie-modal")?.classList.add("show");
+}
+function closePaieModal() {
+  document.getElementById("paie-modal")?.classList.remove("show");
+}
+function ajouterPrimeManuelle() {
+  const libelle = document.getElementById("paie-prime-libelle").value.trim();
+  const montant = parseFloat(document.getElementById("paie-prime-montant").value);
+  if(!libelle || isNaN(montant)) { toast("Merci d'indiquer un libellé et un montant valides.","#E74C3C"); return; }
+  paiePrimes.push({libelle, montant, auto:false});
+  document.getElementById("paie-prime-libelle").value = "";
+  document.getElementById("paie-prime-montant").value = "";
+  recomputePaie();
+}
+function supprimerPrimePaie(idx) {
+  paiePrimes.splice(idx,1);
+  recomputePaie();
+}
+function recomputePaie() {
+  const heures = Math.round(parseFloat(document.getElementById("paie-heures").value)||0);
+  document.getElementById("paie-heures").value = heures;
+  const salaireBase = heures*TARIF_HEURE_SERVICE;
+  document.getElementById("paie-salaire-base").value = fmtEuro(salaireBase);
+  const primesEl = document.getElementById("paie-primes-liste");
+  primesEl.innerHTML = paiePrimes.map((p,i)=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--text2);padding:5px 0;">
+      <span>${esc(p.libelle)}</span>
+      <span style="display:flex;align-items:center;gap:8px;">
+        <strong style="color:#52D98B;">${fmtEuro(p.montant)}</strong>
+        <button class="btn btn-ghost btn-sm" style="padding:2px 7px;" onclick="supprimerPrimePaie(${i})">✕</button>
+      </span>
+    </div>`).join("");
+  const totalPrimes = paiePrimes.reduce((s,p)=>s+p.montant,0);
+  const total = salaireBase + totalPrimes;
+  document.getElementById("paie-total").textContent = fmtEuro(total);
+}
+
+function collectPaieData() {
+  const heures = Math.round(parseFloat(document.getElementById("paie-heures").value)||0);
+  const salaireBase = heures*TARIF_HEURE_SERVICE;
+  const totalPrimes = paiePrimes.reduce((s,p)=>s+p.montant,0);
+  const moisNoms = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+  return {
+    agent_nom: currentPaieAgent,
+    mois: currentPaieMois+1,
+    annee: currentPaieAnnee,
+    periode_label: `${moisNoms[currentPaieMois]} ${currentPaieAnnee}`,
+    heures_service: heures,
+    salaire_base: salaireBase,
+    primes: paiePrimes,
+    total_primes: totalPrimes,
+    total: salaireBase+totalPrimes,
+  };
+}
+
+async function enregistrerFichePaie() {
+  const data = collectPaieData();
+  if(!data.agent_nom) return;
+  try {
+    const payload = {...data, created_by: identityLabel()};
+    const r = await fetch(SB_URL+"/rest/v1/fiches_paie", {method:"POST", headers:{...H,"Prefer":"return=minimal"}, mode:"cors", body:JSON.stringify(payload)});
+    if(!r.ok) throw new Error(await r.text());
+    logActivity("fiche_paie_creee", `Fiche de paie créée pour ${data.agent_nom} (${data.periode_label}) — ${fmtEuro(data.total)}`);
+    toast("✓ Fiche de paie enregistrée");
+    closePaieModal();
+    loadPaieHistory();
+  } catch(e) { toast("Erreur : "+e.message,"#E74C3C"); }
+}
+
+function buildPaieInner(d) {
+  const escHtml = s => (s||"").toString().replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  const primesHTML = (d.primes||[]).map(p=>`
+    <div class="row"><span>${escHtml(p.libelle)}</span><span>${fmtEuro(p.montant)}</span></div>`).join("");
+  const css = `
+.paie-page{width:650px;background:#fff;padding:40px;font-family:'Segoe UI',Arial,sans-serif;color:#1a1a1a;}
+.paie-titlebar{background:#1F4E7B;color:#fff;font-weight:800;font-size:16px;letter-spacing:0.03em;padding:14px 18px;border-radius:2px;margin-bottom:20px;text-align:center;}
+.paie-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px;margin-bottom:20px;background:#f5f7fa;padding:14px;border-radius:8px;}
+.paie-grid .lbl{color:#8a94a3;font-size:10px;text-transform:uppercase;}
+.paie-grid .val{font-weight:700;}
+.paie-section-title{font-size:12px;font-weight:800;text-transform:uppercase;color:#1a1a1a;border-bottom:1px solid #ddd;padding-bottom:5px;margin:16px 0 8px;}
+.paie-totaux .row{display:flex;justify-content:space-between;padding:6px 0;font-size:12.5px;color:#333;border-bottom:1px solid #eee;}
+.paie-total-final{display:flex;justify-content:space-between;font-weight:800;font-size:16px;background:#eafaf1;padding:12px 14px;border-radius:8px;margin-top:12px;}
+.paie-footer{margin-top:30px;font-size:9px;color:#999;text-align:center;}
+`;
+  const html = `<div class="paie-page">
+    <div class="paie-titlebar">FICHE DE PAIE — DOG RESCUE</div>
+    <div class="paie-grid">
+      <div><div class="lbl">Agent</div><div class="val">${escHtml(d.agent_nom)}</div></div>
+      <div><div class="lbl">Période</div><div class="val">${escHtml(d.periode_label)}</div></div>
+    </div>
+    <div class="paie-section-title">Salaire de base</div>
+    <div class="paie-totaux"><div class="row"><span>${d.heures_service} heure(s) de service × ${fmtEuro(TARIF_HEURE_SERVICE)}</span><span>${fmtEuro(d.salaire_base)}</span></div></div>
+    ${(d.primes||[]).length ? `<div class="paie-section-title">Primes</div><div class="paie-totaux">${primesHTML}</div>` : ""}
+    <div class="paie-total-final"><span>TOTAL NET</span><span>${fmtEuro(d.total)}</span></div>
+    <div style="margin-top:14px;font-size:11px;color:#555;text-align:center;font-style:italic;">Vous disposez de 2 semaines à compter de la réception de cette fiche de paie pour récupérer votre paie auprès d'un PDG.</div>
+    <div class="paie-footer">Dog Rescue — Fiche de paie générée le ${new Date().toLocaleDateString("fr-FR")}</div>
+  </div>`;
+  return {css, html};
+}
+async function renderPaieAsJPEG(data) {
+  if(typeof html2canvas==="undefined") throw new Error("Le module de génération d'image n'a pas pu se charger.");
+  const {css, html} = buildPaieInner(data);
+  const zone = document.getElementById("doc-render-zone");
+  zone.innerHTML = `<style>${css}</style>${html}`;
+  await new Promise(r=>setTimeout(r,60));
+  const target = zone.querySelector(".paie-page");
+  const canvas = await html2canvas(target, {scale:2, backgroundColor:"#ffffff", useCORS:true});
+  zone.innerHTML = "";
+  return await new Promise(resolve=>{ canvas.toBlob(blob=>resolve(URL.createObjectURL(blob)), "image/jpeg", 0.95); });
+}
+async function apercuFichePaie() {
+  const data = collectPaieData();
+  toast("⏳ Génération de l'aperçu…","#5D8AA8");
+  try {
+    const url = await renderPaieAsJPEG(data);
+    showDocPreview(url, `Paie_${data.agent_nom.replace(/\s+/g,"_")}_${data.periode_label}`);
+  } catch(e) { toast("Erreur : "+e.message,"#E74C3C"); }
+}
+
+async function loadPaieHistory() {
+  const el = document.getElementById("paie-history");
+  try {
+    const rows = await sb("fiches_paie?select=*&order=created_at.desc&limit=100");
+    if(!el) return;
+    if(!rows.length) { el.innerHTML = '<div class="empty"><p>Aucune fiche de paie créée.</p></div>'; return; }
+    el.innerHTML = rows.map(r=>`
+      <div class="log-item">
+        <div><div class="log-agent">${esc(r.agent_nom)} — ${esc(r.periode_label)}</div><div class="log-dates">${fmtEuro(r.total)} · par ${esc(r.created_by||"—")}</div></div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="btn btn-primary btn-sm" onclick="reprintPaie('${r.id}')">👁 Revoir</button>
+          <button class="btn btn-danger btn-sm" onclick="supprimerPaie('${r.id}')">🗑</button>
+        </div>
+      </div>`).join("");
+  } catch(e) { if(el) el.innerHTML = '<div class="empty"><p>Erreur de chargement.</p></div>'; }
+}
+async function reprintPaie(id) {
+  try {
+    const rows = await sb(`fiches_paie?id=eq.${id}&select=*`);
+    const d = rows && rows[0];
+    if(!d) return;
+    const url = await renderPaieAsJPEG(d);
+    showDocPreview(url, `Paie_${d.agent_nom.replace(/\s+/g,"_")}_${d.periode_label}`);
+  } catch(e) { toast("Erreur : "+e.message,"#E74C3C"); }
+}
+async function supprimerPaie(id) {
+  if(!confirm("Supprimer définitivement cette fiche de paie ?")) return;
+  try {
+    await sb(`fiches_paie?id=eq.${id}`,{method:"DELETE"});
+    logActivity("fiche_paie_suppr","Fiche de paie supprimée");
+    toast("✓ Fiche de paie supprimée");
+    loadPaieHistory();
+  } catch(e) { toast("Erreur : "+e.message,"#E74C3C"); }
+}
 async function loadLogs() {
   try {
     const logs = await sb("services_logs?select=*&order=debut.desc&limit=100");
@@ -5147,7 +5820,7 @@ async function creerCompte() {
   try {
     const r = await fetch(SB_URL+"/rest/v1/agents_comptes",{
       method:"POST", headers:{...H,"Prefer":"return=minimal"}, mode:"cors",
-      body:JSON.stringify({prenom,nom,pin,role:role_c})
+      body:JSON.stringify({prenom,nom,pin,role:role_c,statut_effectif:"Hors service"})
     });
     if(!r.ok) throw new Error(await r.text());
     toast("✓ Compte créé pour "+prenom+" "+nom);
