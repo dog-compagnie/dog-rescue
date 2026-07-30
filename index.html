@@ -5840,7 +5840,7 @@ async function creerCompte() {
   try {
     const r = await fetch(SB_URL+"/rest/v1/agents_comptes",{
       method:"POST", headers:{...H,"Prefer":"return=minimal"}, mode:"cors",
-      body:JSON.stringify({prenom,nom,pin,role:role_c,statut_effectif:"Hors service"})
+      body:JSON.stringify({prenom,nom,pin,role:role_c,statut_effectif:"Hors Service"})
     });
     if(!r.ok) throw new Error(await r.text());
     toast("✓ Compte créé pour "+prenom+" "+nom);
